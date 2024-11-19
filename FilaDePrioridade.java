@@ -1,7 +1,7 @@
 public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
     private X[] elementos;
     int tamanhoAtual;
-    private final int tamanhoMaximo;
+    private int tamanhoMaximo;
 
     // Construtor da Fila de Prioridade
     @SuppressWarnings("unchecked")
