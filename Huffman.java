@@ -1,7 +1,5 @@
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class Huffman {
@@ -56,7 +54,7 @@ public class Huffman {
     }
 
     // Método para calcular a frequência e inserir na fila de prioridade
-   public static FilaDePrioridade<No> calcularFrequencias(String caminhoArquivo) throws Exception {
+  /*  public static FilaDePrioridade<No> calcularFrequencias(String caminhoArquivo) throws Exception {
     Map<Character, Integer> frequencias = new HashMap<>();
     try (RandomAccessFile arquivo = new RandomAccessFile(caminhoArquivo, "r")) {
         byte[] buffer = new byte[1024];
@@ -79,7 +77,7 @@ public class Huffman {
     }
 
     return fila;
-}
+}*/
 
     
     // Método para calcular a frequência dos caracteres no texto

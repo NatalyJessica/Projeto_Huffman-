@@ -16,13 +16,13 @@ public class Main {
             System.err.println("Conteudo do arquivo: "+ textoOriginal);
 
           // Etapa 1
-          FilaDePrioridade<Huffman.No> fila = Huffman.calcularFrequencias(caminhoArquivoTxt1);
+         /* FilaDePrioridade<Huffman.No> fila = Huffman.calcularFrequencias(caminhoArquivoTxt1);
 
           while (!fila.isVazia()) {
               Huffman.No no = fila.recupereUmItem();
               System.out.println(no);
           }
-            /*  Map<Character, Integer> frequencias = Huffman.calcularFrequencias(textoOriginal);
+              Map<Character, Integer> frequencias = Huffman.calcularFrequencias(textoOriginal);
             System.out.println("Frequencia calculada" + frequencias);*/ 
 
 
