@@ -34,8 +34,9 @@ public class Huffman {
         }
 
     }
-     // Método para calcular a frequência dos caracteres no texto
-     public static Map<Character, Integer> calcularFrequencias(String texto) {
+
+    // Método para calcular a frequência dos caracteres no texto
+    public static Map<Character, Integer> calcularFrequencias(String texto) {
         Map<Character, Integer> frequencias = new HashMap<>();
         for (int i = 0; i < texto.length(); i++) {
             char c = texto.charAt(i);
@@ -44,41 +45,47 @@ public class Huffman {
         return frequencias;
     }
 
-    // Método para construir a árvore de Huffman
+    // Construção da árvore de Huffman
     public static No construirArvore(Map<Character, Integer> frequencias) throws Exception {
-        FilaDePrioridade<No> fila = new FilaDePrioridade<>(frequencias.size());
+        // Criar a fila de prioridade (min-heap)
+        PriorityQueue<No> fila = new PriorityQueue<>(frequencias.size());
 
         // Adicionar todos os caracteres à fila de prioridade
         for (Map.Entry<Character, Integer> entrada : frequencias.entrySet()) {
-            fila.guardeUmItem(new No(entrada.getValue(), entrada.getKey()));
+            fila.add(new No(entrada.getValue(), entrada.getKey()));
         }
-        // Construção da árvore de Huffman
-        while (fila.getSize() > 1) { // Altere esta condição
-            No esquerda = fila.recupereUmItem();
-            No direita = fila.recupereUmItem();
-            No novoNo = new No(esquerda.frequencia + direita.frequencia, esquerda, direita);
-            fila.guardeUmItem(novoNo);
-        }
-      
 
-        // Retorna o nó raiz da árvore
-        return fila.recupereUmItem();
+        // Construção da árvore de Huffman
+        while (fila.size() > 1) {
+            // Desenfileirar os dois nós com menor frequência
+            No esquerda = fila.poll(); // Nodo com a menor frequência
+            No direita = fila.poll(); // Nodo com a segunda menor frequência
+
+            // Criar um novo nó com a soma das frequências dos dois nós
+            No novoNo = new No(esquerda.frequencia + direita.frequencia, esquerda, direita);
+
+            // Reenfileirar o novo nó
+            fila.add(novoNo);
+        }
+
+        // Retorna o nó raiz da árvore, que será o único nó restante na fila
+        return fila.poll();
     }
 
-    
-
-    // Método para gerar códigos de Huffman
+    // Método para gerar os códigos de Huffman
     public static void gerarCodigos(No raiz, String prefixo, Map<Character, String> codigos) {
         if (raiz == null) {
             return;
         }
 
+        // Se for uma folha, o nó contém um caractere
         if (raiz.esquerdo == null && raiz.direito == null) {
-            codigos.put(raiz.caractere, prefixo);
+            codigos.put(raiz.caractere, prefixo); // Adiciona o código binário ao mapa
         }
 
-        gerarCodigos(raiz.esquerdo, prefixo + "0", codigos);
-        gerarCodigos(raiz.direito, prefixo + "1", codigos);
+        // Recursão para os filhos esquerdo e direito
+        gerarCodigos(raiz.esquerdo, prefixo + "0", codigos); // Para o lado esquerdo, adiciona "0"
+        gerarCodigos(raiz.direito, prefixo + "1", codigos); // Para o lado direito, adiciona "1"
     }
 
     // Compactação (transformar texto em binário usando os códigos de Huffman)
@@ -97,29 +104,28 @@ public class Huffman {
             // Salvar a estrutura da árvore como uma string (pré-ordem)
             StringBuilder estruturaArvore = new StringBuilder();
             serializarArvore(raiz, estruturaArvore);
-    
+
             // Escrever no arquivo: árvore e texto compactado
             raf.writeBytes(estruturaArvore.toString() + "\n");
             raf.writeBytes(textoCompactado);
         }
     }
-    
+
     private static void serializarArvore(No no, StringBuilder sb) {
         if (no == null) {
             sb.append("null,");
             return;
         }
-    
+
         if (no.esquerdo == null && no.direito == null) {
             sb.append("[").append(no.caractere).append("],");
         } else {
             sb.append("(),");
         }
-    
+
         serializarArvore(no.esquerdo, sb);
         serializarArvore(no.direito, sb);
     }
-    
 
     // Descompactação (transformar o binário de volta para o texto original)
     public static String descompactar(String binario, No raiz) {
@@ -139,24 +145,24 @@ public class Huffman {
         return texto.toString();
     }
 
-     // Método para ler o conteúdo de um arquivo e retorná-lo como uma string
-     public static String lerArquivo(String caminho) throws IOException {
+    // Método para ler o conteúdo de um arquivo e retorná-lo como uma string
+    public static String lerArquivo(String caminho) throws IOException {
         RandomAccessFile raf = null;
         StringBuilder sb = new StringBuilder();
         String linha;
-    
+
         try {
-            raf = new RandomAccessFile(caminho, "r");  
+            raf = new RandomAccessFile(caminho, "r");
             while ((linha = raf.readLine()) != null) {
                 sb.append(linha).append("\n");
             }
         } finally {
             if (raf != null) {
-                raf.close();  // Garante que o arquivo será fechado
+                raf.close(); // Garante que o arquivo será fechado
             }
         }
-    
+
         return sb.toString().trim(); // Remove espaços e quebras de linha extras
     }
-    
+
 }
