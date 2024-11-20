@@ -1,7 +1,8 @@
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable {
+public class ArvoreBinariaDeBusca<X extends Comparable<X>> {
+    //sub classe no
     private class No {
         private No esq;
         private X info;
@@ -17,10 +18,12 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
             this(null, info, null);
         }
 
+        @SuppressWarnings("unused")
         public No(No esq, X info) {
             this(esq, info, null);
         }
 
+        @SuppressWarnings("unused")
         public No(X info, No dir) {
             this(null, info, dir);
         }
@@ -50,21 +53,44 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
         }
 
         // métodos obrigatórios
+        //clone
+        @Override
+        protected No clone() {
+            No cloneEsq = this.esq == null ? null : this.esq.clone();
+            No cloneDir = this.dir == null ? null : this.dir.clone();
+            X cloneInfo = this.info instanceof Cloneable ? meuCloneDeX(this.info) : this.info;
+            return new No(cloneEsq, cloneInfo, cloneDir);
+        }
+        //clone
+        @Override
+        @SuppressWarnings("unchecked")
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null || getClass() != obj.getClass())
+                return false;
+
+            No other = (No) obj;
+            return (info == null ? other.info == null : info.equals(other.info)) &&
+                    (esq == null ? other.esq == null : esq.equals(other.esq)) &&
+                    (dir == null ? other.dir == null : dir.equals(other.dir));
+        }
+
+        //hashCode
+        @Override
+        public int hashCode() {
+            int result = (info == null ? 0 : info.hashCode());
+            result = 31 * result + (esq == null ? 0 : esq.hashCode());
+            result = 31 * result + (dir == null ? 0 : dir.hashCode());
+            return result;
+        }
+
     }
 
     private No raiz;
 
-    private X meuCloneDeX(X x) {
-        X ret = null;
-
-        try {
-            Class<?> classe = x.getClass();
-            Method metodo = classe.getMethod("clone");
-            ret = (X) metodo.invoke(x);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException erro) {
-        }
-
-        return ret;
+    public ArvoreBinariaDeBusca() {
+        this.raiz = null;
     }
 
     // Adicionado para Huffman: Classe interna para armazenar caractere e frequência
@@ -77,6 +103,7 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
             this.frequencia = frequencia;
         }
 
+
         @Override
         public int compareTo(CaractereFreq outro) {
             return Integer.compare(this.frequencia, outro.frequencia);
@@ -88,13 +115,16 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
         }
     }
 
-    // Método para construir a árvore de Huffman a partir de uma lista de caracteres e suas frequências
+    // Método para construir a árvore de Huffman a partir de uma lista de caracteres
+    // e suas frequências
+    @SuppressWarnings("unchecked")
     public void construaHuffman(CaractereFreq[] caracteres) throws Exception {
         for (CaractereFreq caractereFreq : caracteres) {
             this.inclua((X) caractereFreq);
         }
     }
 
+    //metodo para adicionar elementos na arvore
     public void inclua(X inf) throws Exception {
         if (inf == null)
             throw new Exception("informacao ausente");
@@ -137,6 +167,7 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
         }
     }
 
+    //metodo para ver se existe o nodo procurado
     public boolean tem(X info) throws Exception {
         if (info == null)
             throw new Exception("informacao ausente");
@@ -158,6 +189,85 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
         }
     }
 
+    //metodos para quantidade de nos
+    public int getQtdDeNodos() {
+        return getQtdDeNodos(this.raiz);
+    }
+
+    private int getQtdDeNodos(No r) {
+        if (r == null)
+            return 0;
+        return 1 + getQtdDeNodos(r.getEsq()) + getQtdDeNodos(r.getDir());
+    }
+
+    //metodos para balancear a arvore
+    public void balanceieSe() {
+        balanceieSe(this.raiz);
+    }
+
+    private void balanceieSe(No r) {
+        if (r == null)
+            return;
+
+        int qtdDir = getQtdDeNodos(r.getDir());
+        int qtdEsq = getQtdDeNodos(r.getEsq());
+
+        while (Math.abs(qtdDir - qtdEsq) > 1) {
+            if (qtdEsq - qtdDir > 1) {
+                X antigaRaiz = r.getInfo();
+                No atual = r;
+
+                atual = atual.getEsq();
+                while (atual.getDir() != null) {
+                    atual = atual.getDir();
+                }
+
+                r.setInfo(atual.getInfo());
+                try {
+                    remova(atual.getInfo());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    inclua(antigaRaiz);
+                } catch (Exception e) {
+                    e.printStackTrace(); // Trate a exceção conforme necessário
+                }
+                qtdEsq--;
+                qtdDir++;
+            }
+
+            if (qtdDir - qtdEsq > 1) {
+                X antigaRaiz = r.getInfo();
+                No atual = r;
+
+                atual = atual.getDir();
+                while (atual.getEsq() != null) {
+                    atual = atual.getEsq();
+                }
+
+                r.setInfo(atual.getInfo());
+                try {
+                    remova(atual.getInfo());
+                } catch (Exception e) {
+                    e.printStackTrace(); // Trate a exceção conforme necessário
+                }
+
+                try {
+                    inclua(antigaRaiz);
+                } catch (Exception e) {
+                    e.printStackTrace(); // Trate a exceção conforme necessário
+                }
+                qtdEsq++;
+                qtdDir--;
+            }
+
+            balanceieSe(r.getDir());
+            balanceieSe(r.getEsq());
+        }
+    }
+    //metodo para pegar menor
     public X getMenor() throws Exception {
         if (this.raiz == null)
             throw new Exception("arvore vazia");
@@ -180,84 +290,7 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
         return ret;
     }
 
-    public int getQtdDeNodos() {
-        return getQtdDeNodos(this.raiz);
-    }
-
-    private int getQtdDeNodos(No r) {
-        if (r == null)
-            return 0;
-        return 1 + getQtdDeNodos(r.getEsq()) + getQtdDeNodos(r.getDir());
-    }
-
-    public void balanceieSe()  {
-        balanceieSe(this.raiz);
-    }
-
-   private void balanceieSe(No r) {
-    if (r == null)
-        return;
-
-    int qtdDir = getQtdDeNodos(r.getDir());
-    int qtdEsq = getQtdDeNodos(r.getEsq());
-
-    while (Math.abs(qtdDir - qtdEsq) > 1) {
-        if (qtdEsq - qtdDir > 1) {
-            X antigaRaiz = r.getInfo();
-            No atual = r;
-
-            atual = atual.getEsq();
-            while (atual.getDir() != null) {
-                atual = atual.getDir();
-            }
-
-            r.setInfo(atual.getInfo());
-            try {
-                remova(atual.getInfo());
-            } catch (Exception e) {
-                e.printStackTrace(); 
-            }
-
-            try {
-                inclua(antigaRaiz);
-            } catch (Exception e) {
-                e.printStackTrace(); // Trate a exceção conforme necessário
-            }
-            qtdEsq--;
-            qtdDir++;
-        }
-
-        if (qtdDir - qtdEsq > 1) {
-            X antigaRaiz = r.getInfo();
-            No atual = r;
-
-            atual = atual.getDir();
-            while (atual.getEsq() != null) {
-                atual = atual.getEsq();
-            }
-
-            r.setInfo(atual.getInfo());
-            try {
-                remova(atual.getInfo());
-            } catch (Exception e) {
-                e.printStackTrace(); // Trate a exceção conforme necessário
-            }
-
-            try {
-                inclua(antigaRaiz);
-            } catch (Exception e) {
-                e.printStackTrace(); // Trate a exceção conforme necessário
-            }
-            qtdEsq++;
-            qtdDir--;
-        }
-
-        balanceieSe(r.getDir());
-        balanceieSe(r.getEsq());
-    }
-}
-
-
+    //metodo para pegar o maiorr
     public X getMaior() throws Exception {
         if (this.raiz == null)
             throw new Exception("arvore vazia");
@@ -280,6 +313,7 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
         return ret;
     }
 
+    //metodo remover
     public void remova(X info) throws Exception {
         if (info == null) {
             throw new Exception("Informação ausente");
@@ -372,4 +406,57 @@ public class ArvoreBinariaDeBusca<X extends Comparable<X>> implements Cloneable 
             }
         }
     }
+
+    //metodos Obrigatorios
+    @SuppressWarnings("unchecked")
+    private X meuCloneDeX(X x) {
+        X ret = null;
+
+        try {
+            Class<?> classe = x.getClass();
+            Method metodo = classe.getMethod("clone");
+            ret = (X) metodo.invoke(x);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException erro) {
+        }
+
+        return ret;
+    }
+    // clone
+    @Override
+    public ArvoreBinariaDeBusca<X> clone() {
+        try {
+            return new ArvoreBinariaDeBusca<>(this);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao clonar ArvoreBinariaDeBusca", e);
+        }
+    }
+
+    // Construtor de cópia
+    public ArvoreBinariaDeBusca(ArvoreBinariaDeBusca<X> modelo) throws Exception {
+        if (modelo == null) {
+            throw new Exception("Modelo ausente");
+        }
+        if (modelo.raiz != null) {
+            this.raiz = modelo.raiz.clone();
+        }
+    }
+
+    // equals
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+
+        ArvoreBinariaDeBusca<?> other = (ArvoreBinariaDeBusca<?>) obj;
+        return raiz == null ? other.raiz == null : raiz.equals(other.raiz);
+    }
+
+    // hascode
+    @Override
+    public int hashCode() {
+        return 31 * (raiz == null ? 0 : raiz.hashCode());
+    }
+
 }
