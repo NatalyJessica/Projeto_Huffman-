@@ -31,7 +31,7 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
        // System.out.println(this.toString());
     
         // Organiza a fila para manter a prioridade
-        heapifyParaCima(tamanhoAtual - 1);
+        reorganizarParaCima(tamanhoAtual - 1);
     }
 
     // Método para remover o item de maior prioridade
@@ -45,7 +45,7 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         elementos[0] = elementos[tamanhoAtual];
     
         // Reorganiza a fila após remoção
-        heapifyParaBaixo(0);
+        reorganizarParaBaixo(0);
     
         // Imprime o estado da fila para debug
        // System.out.println("Item removido: " + ret);
@@ -57,16 +57,16 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         
 
     // Método para reorganizar a fila para cima (mantendo a propriedade da heap)
-    private void heapifyParaCima(int index) {
+    private void reorganizarParaCima(int index) {
         int pai = (index - 1) / 2;
         if (index > 0 && elementos[index].compareTo(elementos[pai]) > 0) {
             trocar(index, pai);
-            heapifyParaCima(pai);
+            reorganizarParaCima(pai);
         }
     }
 
     // Método para reorganizar a fila para baixo (mantendo a propriedade da heap)
-    private void heapifyParaBaixo(int index) {
+    private void reorganizarParaBaixo(int index) {
         int esquerda = 2 * index + 1;
         int direita = 2 * index + 2;
         int maior = index;
@@ -81,7 +81,7 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
 
         if (maior != index) {
             trocar(index, maior);
-            heapifyParaBaixo(maior);
+            reorganizarParaBaixo(maior);
         }
     }
 
@@ -107,7 +107,7 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         return tamanhoAtual;
     }
 
-    // Método para clonar a fila
+    // Método clone
     public Object clone() {
         try {
             FilaDePrioridade<X> ret = new FilaDePrioridade<>(this.tamanhoMaximo);
@@ -121,7 +121,7 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         }
     }
 
-    // Método equals para comparar duas filas de prioridade
+    // Método equals 
     @SuppressWarnings("unchecked")
     public boolean equals(Object obj) {
         if (this == obj)

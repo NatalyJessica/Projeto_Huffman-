@@ -15,7 +15,7 @@ public class Main {
             String caminhoArquivoEXE = "C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";
 
             // Etapa 1 ler arquivos
-            String textoOriginal = Huffman.lerArquivo(caminhoArquivoEXE);
+            String textoOriginal = Huffman.lerArquivo(caminhoArquivoTxt1);
             System.err.println("Conteudo do arquivo: " + textoOriginal);
             // Etapa 2 calcular frequencia
             HashMap<Character, Integer> frequencias = Huffman.calcularFrequencia(textoOriginal);
