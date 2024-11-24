@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 public class HashMap<K, V> implements Cloneable {
@@ -20,6 +18,7 @@ public class HashMap<K, V> implements Cloneable {
             return this.valor;
         }
 
+        // @SuppressWarnings("unused")
         @SuppressWarnings("unused")
         public void setChave(K k) {
             this.chave = k;
@@ -48,10 +47,7 @@ public class HashMap<K, V> implements Cloneable {
 
         @Override
         public String toString() {
-            return "Element{" +
-                    "chave=" + chave +
-                    ", valor=" + valor +
-                    '}';
+            return "Element{" + "chave=" + chave + ", valor=" + valor + '}';
         }
     }
 
@@ -59,7 +55,6 @@ public class HashMap<K, V> implements Cloneable {
     private int qtdElems = 0, qtdPosOcupadas = 0;
     private int capacidadeInicial;
     private float txMinDesperdicio, txMaxDesperdicio;
-
 
     @SuppressWarnings("unchecked")
     public HashMap(int capacidadeInicial, float txMinDesperdicio, float txMaxDesperdicio) {
@@ -73,18 +68,18 @@ public class HashMap<K, V> implements Cloneable {
         if (qtdElems / (float) vetor.length > txMaxDesperdicio) {
             redimensionarVetor(vetor.length * 2);
         }
-    
+
         int hash = chave.hashCode(); // Correção aqui: método hashCode da chave
         int indice = Math.abs(hash) % vetor.length;
-    
+
         if (vetor[indice] == null) {
             vetor[indice] = new ListaSimplesDesordenada<>();
             qtdPosOcupadas++;
         }
-    
+
         Element newElement = new Element(chave, valor);
         ListaSimplesDesordenada<Element> lista = vetor[indice];
-    
+
         // Verifica se o elemento já existe
         boolean chaveExistente = false;
         for (Element elem : lista) {
@@ -95,14 +90,13 @@ public class HashMap<K, V> implements Cloneable {
                 break;
             }
         }
-    
+
         // Se a chave não foi encontrada, adiciona um novo elemento
         if (!chaveExistente) {
             lista.guardeUmItemNoInicio(newElement);
             qtdElems++;
         }
     }
-    
 
     public void removaUmItem(K chave) throws Exception {
         int hash = chave.hashCode(); // Correção aqui: método hashCode da chave
@@ -133,7 +127,6 @@ public class HashMap<K, V> implements Cloneable {
         throw new NoSuchElementException("Chave não encontrada: " + chave);
     }
 
-  
     // METODO PARA REDIMENCIONAR ITEM
     @SuppressWarnings("unchecked")
     private void redimensionarVetor(int novaCapacidade) throws Exception {
@@ -175,9 +168,56 @@ public class HashMap<K, V> implements Cloneable {
         throw new NoSuchElementException("Chave não encontrada: " + chave);
     }
 
-      // Método para retornar as chaves armazenadas no HashMap
-    public Iterable<K> getChaves() {
-        List<K> chaves = new ArrayList<>();
+    // Método para retornar as chaves armazenadas no HashMap
+    public Iterable<K> getChaves() throws Exception {
+        ListaSimplesDesordenada<K> chaves = new ListaSimplesDesordenada<>();
+        for (ListaSimplesDesordenada<Element> lista : vetor) {
+            if (lista != null) {
+                for (Element elem : lista) {
+                    chaves.guardeUmItemNoInicio(elem.getChave());
+                }
+            }
+        }
+        return chaves;
+    }
+
+    public String toString() {
+        StringBuilder result = new StringBuilder("{");
+        boolean primeiroElemento = true;
+
+        for (int i = 0; i < vetor.length; i++) {
+            if (vetor[i] != null) {
+                for (Element elem : vetor[i]) {
+                    if (!primeiroElemento) {
+                        result.append(", ");
+                    }
+                    result.append(elem.getChave()).append("=").append(elem.getValor());
+                    primeiroElemento = false;
+                }
+            }
+        }
+
+        result.append("}");
+        return result.toString();
+    }
+
+    public int getQtdElems() {
+        return qtdElems;
+    }
+
+    // 1. Método get (equivalente a recupereUmItem)
+    public V get(K chave) throws Exception {
+        return recupereUmItem(chave); // Aproveitando o método já existente
+    }
+
+    // 2. Método size
+    public int size() {
+        return qtdElems; // Retorna a quantidade de elementos
+    }
+
+    // 3. Método keySet
+    public java.util.Set<K> keySet() {
+        java.util.Set<K> chaves = new java.util.HashSet<>();
         for (ListaSimplesDesordenada<Element> lista : vetor) {
             if (lista != null) {
                 for (Element elem : lista) {
@@ -186,26 +226,5 @@ public class HashMap<K, V> implements Cloneable {
             }
         }
         return chaves;
-    }
-
-    @Override
-    public String toString() {
-        String result = "HashMap:\n";
-
-        for (int i = 0; i < vetor.length; i++) {
-            if (vetor[i] != null) {
-                result += "Índice " + i + ": ";
-                for (Element elem : vetor[i]) {
-                    result += elem.toString() + " ";
-                }
-                result += "\n";
-            }
-        }
-
-        return result;
-    }
-
-    public int getQtdElems() {
-        return qtdElems;
     }
 }

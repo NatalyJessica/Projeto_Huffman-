@@ -1,6 +1,6 @@
 public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
     private X[] elementos;
-    int tamanhoAtual;
+    private int tamanhoAtual;
     private int tamanhoMaximo;
 
     // Construtor da Fila de Prioridade
@@ -14,78 +14,68 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         this.tamanhoMaximo = tamanhoMaximo;
     }
 
-    //guarde um item
+    // Adiciona um item na fila de prioridade
     public void guardeUmItem(X x) throws Exception {
         if (x == null)
             throw new Exception("Falta o que guardar");
-    
+
         if (tamanhoAtual == tamanhoMaximo)
             throw new Exception("Fila cheia");
-    
+
         // Adiciona o elemento no final da fila
         elementos[tamanhoAtual] = x;
         tamanhoAtual++;
-    
-        // Imprime o estado da fila para debug
-       // System.out.println("Item adicionado: " + x);
-       // System.out.println(this.toString());
-    
-        // Organiza a fila para manter a prioridade
+
+        // Organiza a fila para manter a prioridade (Heap Max)
         reorganizarParaCima(tamanhoAtual - 1);
     }
 
-    // Método para remover o item de maior prioridade
+    // Método para remover o item de maior prioridade (primeiro elemento)
     public X recupereUmItem() throws Exception {
         if (tamanhoAtual == 0)
             throw new Exception("Nada a recuperar");
-    
-        X ret = elementos[0]; // O elemento de maior prioridade é sempre o primeiro
-        // Troca o primeiro item com o último e diminui o tamanho
+
+        X ret = elementos[0]; // O elemento de maior prioridade é o primeiro
         tamanhoAtual--;
-        elementos[0] = elementos[tamanhoAtual];
-    
-        // Reorganiza a fila após remoção
+        elementos[0] = elementos[tamanhoAtual]; // Troca o primeiro com o último
+
+        // Reorganiza a fila para manter a propriedade da heap
         reorganizarParaBaixo(0);
-    
-        // Imprime o estado da fila para debug
-       // System.out.println("Item removido: " + ret);
-       // System.out.println(this.toString());
-    
+
         return ret;
     }
-    
-        
 
-    // Método para reorganizar a fila para cima (mantendo a propriedade da heap)
+    // Reorganiza a fila para cima para manter a propriedade da heap
     private void reorganizarParaCima(int index) {
         int pai = (index - 1) / 2;
         if (index > 0 && elementos[index].compareTo(elementos[pai]) > 0) {
             trocar(index, pai);
-            reorganizarParaCima(pai);
+            reorganizarParaCima(pai); // Recursão para continuar a organizar
         }
     }
 
-    // Método para reorganizar a fila para baixo (mantendo a propriedade da heap)
+    // Reorganiza a fila para baixo para manter a propriedade da heap
     private void reorganizarParaBaixo(int index) {
         int esquerda = 2 * index + 1;
         int direita = 2 * index + 2;
         int maior = index;
 
+        // Verifica qual filho tem maior prioridade
         if (esquerda < tamanhoAtual && elementos[esquerda].compareTo(elementos[maior]) > 0) {
             maior = esquerda;
         }
-
         if (direita < tamanhoAtual && elementos[direita].compareTo(elementos[maior]) > 0) {
             maior = direita;
         }
 
+        // Se o maior não for o elemento atual, troca e organiza novamente
         if (maior != index) {
             trocar(index, maior);
-            reorganizarParaBaixo(maior);
+            reorganizarParaBaixo(maior); // Recursão para continuar a organizar
         }
     }
 
-    // Método para trocar dois elementos do array
+    // Troca dois elementos no array
     private void trocar(int i, int j) {
         X temp = elementos[i];
         elementos[i] = elementos[j];
@@ -102,7 +92,7 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         return tamanhoAtual == tamanhoMaximo;
     }
 
-    // Método para obter o tamanho atual da fila
+    // Retorna o tamanho atual da fila
     public int getSize() {
         return tamanhoAtual;
     }
@@ -121,26 +111,17 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         }
     }
 
-    // Método equals 
+    // Método equals para comparar duas filas
     @SuppressWarnings("unchecked")
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-
-        if (obj == null)
-            return false;
-
-        if (this.getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null || this.getClass() != obj.getClass()) return false;
 
         FilaDePrioridade<X> fil = (FilaDePrioridade<X>) obj;
-
-        if (this.tamanhoAtual != fil.tamanhoAtual)
-            return false;
+        if (this.tamanhoAtual != fil.tamanhoAtual) return false;
 
         for (int i = 0; i < tamanhoAtual; i++) {
-            if (!this.elementos[i].equals(fil.elementos[i]))
-                return false;
+            if (!this.elementos[i].equals(fil.elementos[i])) return false;
         }
 
         return true;
@@ -155,7 +136,7 @@ public class FilaDePrioridade<X extends Comparable<X>> implements Cloneable {
         return result;
     }
 
-    // Método toString
+    // Método toString para representação em string
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Fila de Prioridade: [");
