@@ -65,60 +65,64 @@ public class Huffman {
 
     // Método para ler o conteúdo de um arquivo e retorná-lo como uma string
     public static String lerArquivo(String caminho) throws IOException {
+
         RandomAccessFile raf = null;
         StringBuilder sb = new StringBuilder();
         String linha;
         try {
+            // Inicializa o RandomAccessFile para ler o arquivo, com o modo de acesso "r"
+            // (somente leitura)
             raf = new RandomAccessFile(caminho, "r");
+
+            // Laço que vai ler o arquivo linha por linha até o fim (raf.readLine() retorna
+            // null quando não há mais linhas)
             while ((linha = raf.readLine()) != null) {
+                // Adiciona a linha lida ao StringBuilder e adiciona uma quebra de linha "\n"
                 sb.append(linha).append("\n");
             }
         } finally {
             if (raf != null) {
+                // Fecha o arquivo após a leitura para liberar os recursos
                 raf.close();
             }
         }
+        // Retorna o conteúdo lido como uma string
         return sb.toString().trim();
     }
 
     // calculando a frequencia
     public static HashMap<Character, Integer> calcularFrequencia(String texto) throws Exception {
         HashMap<Character, Integer> frequencias = new HashMap<>(10, 0.75f, 0.9f);
-        // Itera sobre cada caractere do texto
+        // percore cada caractere do texto
         for (int i = 0; i < texto.length(); i++) {
             char c = texto.charAt(i);
             try {
-                // Tenta recuperar a frequência atual do caractere
+                // recupera a frequência atual do caractere
                 int freqAtual = frequencias.recupereUmItem(c);
                 // Atualiza a frequência do caractere
                 frequencias.guardeUmItem(c, freqAtual + 1);
             } catch (NoSuchElementException e) {
                 // Se o caractere não existe, adiciona com frequência 1
                 frequencias.guardeUmItem(c, 1);
-                // System.out.println(frequencias + "\n");
             }
         }
-        // System.out.println(frequencias);
-        return frequencias; // Retorna o HashMap com as frequências
+        return frequencias;
 
     }
-    //criando fila de prioridade
+
+    // criando fila de prioridade
     public FilaDePrioridade<NoHuffman> criarFilaDePrioridade(HashMap<Character, Integer> frequencias) throws Exception {
-        // Cria a fila de prioridade com a capacidade igual ao número de caracteres no
-        // mapa
+        // Cria a fila de prioridade com o tamanho de caracter do hashMap
         FilaDePrioridade<NoHuffman> fila = new FilaDePrioridade<>(frequencias.getQtdElems());
-        // Itera sobre as chaves do HashMap de frequências
+        // Percorre as chaves do HashMap de frequências
         for (Character caractere : frequencias.getChaves()) {
             // Recupera a frequência do caractere
             int frequencia = frequencias.recupereUmItem(caractere);
-
             // Cria um nó Huffman com o caractere e a sua frequência
             NoHuffman no = new NoHuffman(caractere, frequencia);
-
             // Adiciona o nó na fila de prioridade
             fila.guardeUmItem(no);
         }
-        // Retorna a fila preenchida
         return fila;
     }
 
@@ -131,16 +135,14 @@ public class Huffman {
 
             // Criar um novo nó com a soma das frequências
             int frequenciaSomada = noEsquerdo.getFrequencia() + noDireito.getFrequencia();
-            NoHuffman novoNo = new NoHuffman('\0', frequenciaSomada); // '\0' representa um nó não-folha
+            NoHuffman novoNo = new NoHuffman('\0', frequenciaSomada); 
 
-            // Definir os filhos esquerdo e direito
+            // Definir os filhos esquerdo e direito e enfileirar o novo nó
             novoNo.filhoEsquerdo = noEsquerdo;
             novoNo.filhoDireito = noDireito;
-            // Enfileirar o novo nó
             fila.guardeUmItem(novoNo);
 
         }
-
         // Retorna o último nó restante, que é a raiz da árvore
         NoHuffman raiz = fila.recupereUmItem();
         return raiz;
@@ -162,33 +164,28 @@ public class Huffman {
             codigos.guardeUmItem(no.getCaractere(), codigoAtual);
             return;
         }
-
         // Percorre para o filho esquerdo (adiciona '0')
         if (no.getFilhoEsquerdo() != null) {
             gerarCodigosRecursivo(no.getFilhoEsquerdo(), codigoAtual + "0", codigos);
         }
-
         // Percorre para o filho direito (adiciona '1')
         if (no.getFilhoDireito() != null) {
             gerarCodigosRecursivo(no.getFilhoDireito(), codigoAtual + "1", codigos);
         }
     }
 
-    //compactando arquivo
+    // compactando arquivo
     public static String compactar(String texto, HashMap<Character, String> codigos) throws Exception {
         StringBuilder textoCompactado = new StringBuilder();
 
-        // Iterar sobre cada caractere do texto
+        // percorre os  caractere do texto
         for (int i = 0; i < texto.length(); i++) {
             char caractere = texto.charAt(i);
-
             // Recupera o código de Huffman correspondente ao caractere
             String codigoHuffman = codigos.recupereUmItem(caractere);
-
             // Adiciona o código ao texto compactado
             textoCompactado.append(codigoHuffman);
         }
-
         return textoCompactado.toString(); // Retorna o texto compactado em formato binário
     }
 
@@ -201,11 +198,12 @@ public class Huffman {
             serializarArvore(raiz, estruturaArvore);
 
             // Escrever a árvore e o texto compactado no arquivo
-            raf.writeBytes(estruturaArvore.toString() + "\n"); // Estrutura da árvore
-            raf.writeBytes(textoCompactado); // Texto compactado
+            //OBS:O método writeBytes é da classe RandomAccessFile
+            //utilizado para escrever uma sequência de byte
+            raf.writeBytes(estruturaArvore.toString() + "\n"); 
+            raf.writeBytes(textoCompactado);
         }
-
-        return "Arquivo salvo com sucesso em: " + caminho; // Retorna uma mensagem de sucesso
+        return  caminho; 
     }
 
     // Método para serializar a árvore em pré-ordem
@@ -214,14 +212,12 @@ public class Huffman {
             sb.append("null,");
             return;
         }
-
         // Se for uma folha, gravar o caractere
         if (no.filhoEsquerdo == null && no.filhoDireito == null) {
             sb.append("[").append(no.caractere).append("],");
         } else {
             sb.append("(),");
         }
-
         // Recursivamente serializar os filhos
         serializarArvore(no.filhoEsquerdo, sb);
         serializarArvore(no.filhoDireito, sb);
