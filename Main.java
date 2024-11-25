@@ -3,17 +3,25 @@ public class Main {
 
         try {
             // caminho no mac
-             String caminhoArquivoTxt1 = "/Users/u21446/Documents/teste1.txt";
+            String caminhoArquivoTxt1 = "/Users/u21446/Documents/teste1.txt";
+            // String caminhoArquivoTxt2 =/Users/u21446/Documents/teste2.txt";
+            // String caminhoArquivoPdf = "/Users/u21446/Documents/teste3.pdf";
+            // String caminhoArquivoImg = "/Users/u21446/Documents/teste4.jpg";
+            // String caminhoArquivoMp3 = "/Users/u21446/Documents/teste5.mp3";
+            // String caminhoArquivoMp4 = "/Users/u21446/Documents/teste6.mp4";
+            // String caminhoArquivoEXE
+            // ="C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";
 
             // caminho no windows
-            //String caminhoArquivoTxt1 = "C:\\Users\\NatalyJessica\\Documents\\teste1.txt";
+            // String caminhoArquivoTxt1 =
+            // "C:\\Users\\NatalyJessica\\Documents\\teste1.txt";
             // String caminhoArquivoTxt2 ="C:\\Users\\NatalyJessica\\Documents\\teste2.txt";
-            //String caminhoArquivoPdf = "C:\\Users\\NatalyJessica\\Documents\\teste3.pdf";
+            // String caminhoArquivoPdf = "C:\\Users\\NatalyJessica\\Documents\\teste3.pdf";
             // String caminhoArquivoImg = "C:\\Users\\NatalyJessica\\Documents\\teste4.jpg";
-            //String caminhoArquivoMp3 = "C:\\Users\\NatalyJessica\\Documents\\teste5.mp3";
+            // String caminhoArquivoMp3 = "C:\\Users\\NatalyJessica\\Documents\\teste5.mp3";
             // String caminhoArquivoMp4 = "C:\\Users\\NatalyJessica\\Documents\\teste6.mp4";
-            // String caminhoArquivoEXE =
-            // "C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";
+            // String caminhoArquivoEXE
+            // ="C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";
 
             // Etapa 1 ler arquivos
             String textoOriginal = Huffman.lerArquivo(caminhoArquivoTxt1);
@@ -36,17 +44,16 @@ public class Main {
 
             // Compactar o texto
             String textoCompactado = Huffman.compactar(textoOriginal, codigo);
-   
+
             String caminhoCompactado = "/Users/u21446/Documents/arquivo.huffman";
             Huffman.salvarArquivoHuffman(caminhoCompactado, textoCompactado, raiz);
 
             System.out.println("Salvo");
-         
+
             String textoDescompactado = Huffman.descompactar(textoCompactado, raiz);
 
             String caminhoDescompactado = "/Users/u21446/Documents/arquivo.txt";
             Huffman.salvarArquivoDescompactado(caminhoDescompactado, textoDescompactado);
-           
 
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
