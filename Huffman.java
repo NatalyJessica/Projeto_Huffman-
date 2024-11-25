@@ -1,3 +1,5 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.NoSuchElementException;
@@ -224,6 +226,7 @@ public class Huffman {
     }
 
     // Descompactação (transformar o binário de volta para o texto original)
+    //StringBuilder usada para concatenar os caracter 
     public static String descompactar(String binario, NoHuffman raiz) {
         StringBuilder texto = new StringBuilder();
         NoHuffman noAtual = raiz;
@@ -239,5 +242,12 @@ public class Huffman {
 
         return texto.toString();
     }
+
+    //BufferedWriter usado para passar informações para o texto
+    public static void salvarArquivoDescompactado(String caminho, String textoDescompactado) throws IOException {
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminho))) {
+        writer.write(textoDescompactado);
+    }
+}
 
 }
