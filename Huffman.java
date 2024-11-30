@@ -1,8 +1,9 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.NoSuchElementException;
 
 public class Huffman {
     public static class NoHuffman implements Comparable<NoHuffman> {
@@ -46,17 +47,16 @@ public class Huffman {
         // Implementação do compareTo para a prioridade de construção da árvore de
         // Huffman
         @Override
-        public int compareTo(NoHuffman outro) {
-            // Compara pela frequência de forma crescente (menor frequência tem maior
-            // prioridade)
-            return Integer.compare(this.frequencia, outro.frequencia);
+        public int compareTo(NoHuffman o) {
+            // Quanto menor a frequência, maior a prioridade
+            return Integer.compare(this.frequencia, o.frequencia);
         }
 
         // Método toString
         @Override
         public String toString() {
-            return "NoHuffman{caractere=" + (caractere == '\0' ? "interno" : caractere)
-                    + ", frequencia=" + frequencia + "}";
+            return "{caractere=" + (caractere == '\0' ? "interno" : caractere)
+                    + ", frequencia=" + frequencia + "}\n";
         }
 
         // Verifica se o nó é uma folha
@@ -65,189 +65,200 @@ public class Huffman {
         }
     }
 
-    // Método para ler o conteúdo de um arquivo e retorná-lo como uma string
-    public static String lerArquivo(String caminho) throws IOException {
-
-        RandomAccessFile raf = null;
-        StringBuilder sb = new StringBuilder();
-        String linha;
-        try {
-            // Inicializa o RandomAccessFile para ler o arquivo, com o modo de acesso "r"
-            // (somente leitura)
-            raf = new RandomAccessFile(caminho, "r");
-
-            // Laço que vai ler o arquivo linha por linha até o fim (raf.readLine() retorna
-            // null quando não há mais linhas)
-            while ((linha = raf.readLine()) != null) {
-                // Adiciona a linha lida ao StringBuilder e adiciona uma quebra de linha "\n"
-                sb.append(linha).append("\n");
-            }
-        } finally {
-            if (raf != null) {
-                // Fecha o arquivo após a leitura para liberar os recursos
-                raf.close();
-            }
+    // Ler arquivo
+    public static byte[] lerArquivo(String caminho) throws IOException {
+        try (RandomAccessFile arquivo = new RandomAccessFile(caminho, "r")) {
+            byte[] dados = new byte[(int) arquivo.length()]; // Cria um array do tamanho do arquivo
+            arquivo.readFully(dados); // Lê todo o conteúdo no array
+            return dados;
         }
-        // Retorna o conteúdo lido como uma string
-        return sb.toString().trim();
     }
 
-    // calculando a frequencia
-    public static HashMap<Character, Integer> calcularFrequencia(String texto) throws Exception {
-        HashMap<Character, Integer> frequencias = new HashMap<>(10, 0.75f, 0.9f);
-        // percore cada caractere do texto
-        for (int i = 0; i < texto.length(); i++) {
-            char c = texto.charAt(i);
+    // Calcular frequencia
+    public static HashMap<Character, Integer> calcularFrequencia(byte[] dados) throws Exception {
+        // Cria o HashMap para armazenar a frequência dos caracteres
+        HashMap<Character, Integer> frequencias = new HashMap<>(256, 0.25f, 0.75f);
+        // Percorre os dados e calcula a frequência
+        for (byte b : dados) {
+            char caractere = (char) b;
             try {
-                // recupera a frequência atual do caractere
-                int freqAtual = frequencias.recupereUmItem(c);
-                // Atualiza a frequência do caractere
-                frequencias.guardeUmItem(c, freqAtual + 1);
-            } catch (NoSuchElementException e) {
-                // Se o caractere não existe, adiciona com frequência 1
-                frequencias.guardeUmItem(c, 1);
+                // Recupera a frequência atual (se existir)
+                int freqAtual = frequencias.get(caractere);
+                // Incrementa a frequência
+                frequencias.put(caractere, freqAtual + 1);
+            } catch (Exception e) {
+                // Se não existir, adiciona com frequência inicial de 1
+                frequencias.put(caractere, 1);
             }
         }
         return frequencias;
-
     }
 
-    // criando fila de prioridade
-    public FilaDePrioridade<NoHuffman> criarFilaDePrioridade(HashMap<Character, Integer> frequencias) throws Exception {
-        // Cria a fila de prioridade com o tamanho de caracter do hashMap
-        FilaDePrioridade<NoHuffman> fila = new FilaDePrioridade<>(frequencias.getQtdElems());
-        // Percorre as chaves do HashMap de frequências
-        for (Character caractere : frequencias.getChaves()) {
-            // Recupera a frequência do caractere
-            int frequencia = frequencias.recupereUmItem(caractere);
-            // Cria um nó Huffman com o caractere e a sua frequência
-            NoHuffman no = new NoHuffman(caractere, frequencia);
-            // Adiciona o nó na fila de prioridade
-            fila.guardeUmItem(no);
+    // Método que cria a fila de prioridade com base nas frequências
+    public static FilaDePrioridade<NoHuffman> criaFilaDePrioridade(HashMap<Character, Integer> frequencias)
+            throws Exception {
+        // Cria uma fila de prioridade (min-heap) para armazenar os nós de Huffman
+        FilaDePrioridade<NoHuffman> filaDePrioridade = new FilaDePrioridade<NoHuffman>(frequencias.size());
+
+        // Para cada caractere e sua frequência, cria um nó e insere na fila
+        for (Character c : frequencias.keySet()) {
+            NoHuffman novoNo = new NoHuffman(c, frequencias.get(c));
+            filaDePrioridade.guardeUmItem(novoNo);
         }
-        return fila;
+
+        return filaDePrioridade;
     }
 
-    // construindo arvore
-    public static NoHuffman construirArvore(FilaDePrioridade<NoHuffman> fila) throws Exception {
-        while (fila.getSize() > 1) {
-            // Remover os dois nós de menor frequência
-            NoHuffman noEsquerdo = fila.recupereUmItem();
-            NoHuffman noDireito = fila.recupereUmItem();
+    public static NoHuffman construirArvoreDeHuffman(FilaDePrioridade<NoHuffman> filaDePrioridade) throws Exception {
+        // Enquanto houver mais de um nó na fila de prioridade, continue combinando
+        while (filaDePrioridade.getSize() > 1) {
+            // Extrai os dois nós com menor frequência
+            NoHuffman no1 = filaDePrioridade.remove();
+            NoHuffman no2 = filaDePrioridade.remove();
 
-            // Criar um novo nó com a soma das frequências
-            int frequenciaSomada = noEsquerdo.getFrequencia() + noDireito.getFrequencia();
-            NoHuffman novoNo = new NoHuffman('\0', frequenciaSomada); 
+            // Cria um novo nó interno com a soma das frequências
+            NoHuffman noInterno = new NoHuffman(no1, no2);
 
-            // Definir os filhos esquerdo e direito e enfileirar o novo nó
-            novoNo.filhoEsquerdo = noEsquerdo;
-            novoNo.filhoDireito = noDireito;
-            fila.guardeUmItem(novoNo);
-
+            // Insere o novo nó interno de volta na fila de prioridade
+            filaDePrioridade.guardeUmItem(noInterno);
         }
-        // Retorna o último nó restante, que é a raiz da árvore
-        NoHuffman raiz = fila.recupereUmItem();
-        return raiz;
+
+        // Ao final, resta apenas um nó na fila, que é a raiz da árvore
+        return filaDePrioridade.remove();
     }
 
-    // gerando codigos
-    public static HashMap<Character, String> gerarCodigos(NoHuffman raiz) throws Exception {
-        // Criar instância do HashMap personalizado
-        HashMap<Character, String> codigos = new HashMap<>(10, 0.2f, 0.8f);
-        gerarCodigosRecursivo(raiz, "", codigos);
-        return codigos;
+    // Método modificado para retornar o HashMap com os códigos
+    public static HashMap<Character, String> gerarCodigos(NoHuffman no) throws Exception {
+        HashMap<Character, String> codigos = new HashMap<Character, String>(); // Criar o HashMap dentro do método
+
+        // Função recursiva para gerar os códigos
+        gerarCodigosRecursivo(no, "", codigos);
+
+        return codigos; // Retornar o HashMap com os códigos
     }
 
-    // metodo recursivo para gerar os codigos
     private static void gerarCodigosRecursivo(NoHuffman no, String codigoAtual, HashMap<Character, String> codigos)
             throws Exception {
-        // Se o nó é uma folha, o código está completo
-        if (no.getFilhoEsquerdo() == null && no.getFilhoDireito() == null) {
-            codigos.guardeUmItem(no.getCaractere(), codigoAtual);
+        // Se o nó for uma folha, significa que é um caractere, então guardamos o código
+        if (no.isFolha()) {
+            codigos.put(no.getCaractere(), codigoAtual); // Aqui chamamos o método correto da sua classe
+                                                         // HashMap
             return;
         }
-        // Percorre para o filho esquerdo (adiciona '0')
+
+        // Recursão para o filho esquerdo (adiciona '0' ao código)
         if (no.getFilhoEsquerdo() != null) {
             gerarCodigosRecursivo(no.getFilhoEsquerdo(), codigoAtual + "0", codigos);
         }
-        // Percorre para o filho direito (adiciona '1')
+
+        // Recursão para o filho direito (adiciona '1' ao código)
         if (no.getFilhoDireito() != null) {
             gerarCodigosRecursivo(no.getFilhoDireito(), codigoAtual + "1", codigos);
         }
     }
 
-    // compactando arquivo
-    public static String compactar(String texto, HashMap<Character, String> codigos) throws Exception {
-        StringBuilder textoCompactado = new StringBuilder();
+    public static void compactarArquivo(String caminhoArquivoOriginal, String caminhoArquivoCompactado)
+            throws Exception {
+        byte[] dados = lerArquivo(caminhoArquivoOriginal);
 
-        // percorre os  caractere do texto
-        for (int i = 0; i < texto.length(); i++) {
-            char caractere = texto.charAt(i);
-            // Recupera o código de Huffman correspondente ao caractere
-            String codigoHuffman = codigos.recupereUmItem(caractere);
-            // Adiciona o código ao texto compactado
-            textoCompactado.append(codigoHuffman);
+        // Calcular a frequência dos caracteres
+        HashMap<Character, Integer> frequencias = calcularFrequencia(dados);
+
+        // Criar a fila de prioridade
+        FilaDePrioridade<NoHuffman> filaDePrioridade = criaFilaDePrioridade(frequencias);
+
+        // Construir a árvore de Huffman
+        NoHuffman raiz = construirArvoreDeHuffman(filaDePrioridade);
+
+        // Gerar os códigos de Huffman
+        HashMap<Character, String> codigos = gerarCodigos(raiz);
+
+        // Converter os dados para sequência de bits
+        StringBuilder bitsCompactados = new StringBuilder();
+        for (byte b : dados) {
+            char caractere = (char) b;
+            bitsCompactados.append(codigos.get(caractere));
         }
-        return textoCompactado.toString(); // Retorna o texto compactado em formato binário
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminhoArquivoCompactado))) {
+            // Salvar a árvore de Huffman no início do arquivo (em formato binário ou texto)
+            salvarArvoreHuffman(writer, raiz);
+
+            // Salvar os dados compactados
+            writer.write(bitsCompactados.toString());
+        }
     }
 
-    // Método para salvar o arquivo Huffman com a árvore e o texto compactado
-    public static String salvarArquivoHuffman(String caminho, String textoCompactado, NoHuffman raiz)
-            throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(caminho, "rw")) {
-            // Serializar a árvore em pré-ordem
-            StringBuilder estruturaArvore = new StringBuilder();
-            serializarArvore(raiz, estruturaArvore);
-
-            // Escrever a árvore e o texto compactado no arquivo
-            //OBS:O método writeBytes é da classe RandomAccessFile
-            //utilizado para escrever uma sequência de byte
-            raf.writeBytes(estruturaArvore.toString() + "\n"); 
-            raf.writeBytes(textoCompactado);
-        }
-        return  caminho; 
-    }
-
-    // Método para serializar a árvore em pré-ordem
-    private static void serializarArvore(NoHuffman no, StringBuilder sb) {
-        if (no == null) {
-            sb.append("null,");
-            return;
-        }
-        // Se for uma folha, gravar o caractere
-        if (no.filhoEsquerdo == null && no.filhoDireito == null) {
-            sb.append("[").append(no.caractere).append("],");
+    // Método recursivo para salvar a árvore de Huffman no arquivo
+    private static void salvarArvoreHuffman(BufferedWriter writer, NoHuffman no) throws IOException {
+        if (no.isFolha()) {
+            // Se for uma folha, salvar o caractere e indicar que é uma folha
+            writer.write("1");
+            writer.write(no.getCaractere());
         } else {
-            sb.append("(),");
+            // Se for um nó interno, salvar a indicação de que não é folha
+            writer.write("0");
+            // Recursivamente salvar os filhos esquerdo e direito
+            salvarArvoreHuffman(writer, no.getFilhoEsquerdo());
+            salvarArvoreHuffman(writer, no.getFilhoDireito());
         }
-        // Recursivamente serializar os filhos
-        serializarArvore(no.filhoEsquerdo, sb);
-        serializarArvore(no.filhoDireito, sb);
     }
 
-    // Descompactação (transformar o binário de volta para o texto original)
-    //StringBuilder usada para concatenar os caracter 
-    public static String descompactar(String binario, NoHuffman raiz) {
-        StringBuilder texto = new StringBuilder();
-        NoHuffman noAtual = raiz;
+    public static void descompactarArquivo(String caminhoArquivoCompactado, String caminhoArquivoDescompactado)
+            throws Exception {
+        // Ler os dados compactados e a árvore de Huffman
+        StringBuilder bitsCompactados = new StringBuilder();
+        NoHuffman raiz = null;
 
-        for (int i = 0; i < binario.length(); i++) {
-            noAtual = binario.charAt(i) == '0' ? noAtual.filhoEsquerdo : noAtual.filhoDireito;
-            // Se chegarmos a uma folha, adicionamos o caractere ao texto
-            if (noAtual.filhoEsquerdo == null && noAtual.filhoDireito == null) {
-                texto.append(noAtual.caractere);
-                noAtual = raiz;
+        try (BufferedReader reader = new BufferedReader(new FileReader(caminhoArquivoCompactado))) {
+            // Ler e reconstruir a árvore de Huffman
+            raiz = reconstruirArvoreHuffman(reader);
+
+            // Ler os bits compactados
+            String linha;
+            while ((linha = reader.readLine()) != null) {
+                bitsCompactados.append(linha);
             }
         }
 
-        return texto.toString();
+        // Descompactar os dados usando a árvore de Huffman
+        StringBuilder dadosDescompactados = new StringBuilder();
+        NoHuffman noAtual = raiz;
+        for (int i = 0; i < bitsCompactados.length(); i++) {
+            char bit = bitsCompactados.charAt(i);
+            // Se o bit for '0', vá para o filho esquerdo, se for '1', vá para o filho
+            // direito
+            if (bit == '0') {
+                noAtual = noAtual.getFilhoEsquerdo();
+            } else if (bit == '1') {
+                noAtual = noAtual.getFilhoDireito();
+            }
+
+            // Se chegarmos a uma folha, significa que encontramos um caractere
+            if (noAtual.isFolha()) {
+                dadosDescompactados.append(noAtual.getCaractere());
+                noAtual = raiz; // Voltar para a raiz para processar o próximo caractere
+            }
+        }
+
+        // Salvar os dados descompactados no arquivo
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminhoArquivoDescompactado))) {
+            writer.write(dadosDescompactados.toString());
+        }
     }
 
-    //BufferedWriter usado para passar informações para o texto
-    public static void salvarArquivoDescompactado(String caminho, String textoDescompactado) throws IOException {
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminho))) {
-        writer.write(textoDescompactado);
+    private static NoHuffman reconstruirArvoreHuffman(BufferedReader reader) throws IOException {
+        int bit = reader.read();
+        if (bit == '1') {
+            // Se for folha, ler o caractere e retornar o nó folha
+            char caractere = (char) reader.read();
+            return new NoHuffman(caractere, 0); // Frequência será definida posteriormente, se necessário
+        } else {
+            // Se for nó interno, criar um nó e reconstruir os filhos recursivamente
+            NoHuffman filhoEsquerdo = reconstruirArvoreHuffman(reader);
+            NoHuffman filhoDireito = reconstruirArvoreHuffman(reader);
+            return new NoHuffman(filhoEsquerdo, filhoDireito);
+        }
     }
-}
 
 }

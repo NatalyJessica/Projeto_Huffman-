@@ -18,12 +18,6 @@ public class HashMap<K, V> implements Cloneable {
             return this.valor;
         }
 
-        // @SuppressWarnings("unused")
-        @SuppressWarnings("unused")
-        public void setChave(K k) {
-            this.chave = k;
-        }
-
         public void setValor(V v) {
             this.valor = v;
         }
@@ -31,13 +25,11 @@ public class HashMap<K, V> implements Cloneable {
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
 
             Element element = (Element) o;
-            return (chave != null ? chave.equals(element.chave) : element.chave == null);
+            return chave != null ? chave.equals(element.chave) : element.chave == null;
         }
 
         @Override
@@ -50,7 +42,14 @@ public class HashMap<K, V> implements Cloneable {
             return "Element{" + "chave=" + chave + ", valor=" + valor + '}';
         }
     }
-
+    @SuppressWarnings("unchecked")
+    public HashMap() {
+        this.capacidadeInicial = 16; // Defina um valor padrão ou algum outro valor adequado
+        this.txMinDesperdicio = 0.5f; // Defina um valor padrão
+        this.txMaxDesperdicio = 0.75f; // Defina um valor padrão
+        vetor = new ListaSimplesDesordenada[capacidadeInicial];
+    }
+    
     private ListaSimplesDesordenada<Element>[] vetor;
     private int qtdElems = 0, qtdPosOcupadas = 0;
     private int capacidadeInicial;
@@ -64,12 +63,13 @@ public class HashMap<K, V> implements Cloneable {
         vetor = new ListaSimplesDesordenada[capacidadeInicial];
     }
 
-    public void guardeUmItem(K chave, V valor) throws Exception {
+    // Método para inserir um elemento (alterado para o padrão "put")
+    public void put(K chave, V valor) throws Exception {
         if (qtdElems / (float) vetor.length > txMaxDesperdicio) {
             redimensionarVetor(vetor.length * 2);
         }
 
-        int hash = chave.hashCode(); // Correção aqui: método hashCode da chave
+        int hash = chave.hashCode();
         int indice = Math.abs(hash) % vetor.length;
 
         if (vetor[indice] == null) {
@@ -84,8 +84,7 @@ public class HashMap<K, V> implements Cloneable {
         boolean chaveExistente = false;
         for (Element elem : lista) {
             if (elem.getChave().equals(chave)) {
-                // Se a chave já existir, atualiza o valor
-                elem.setValor(valor);
+                elem.setValor(valor); // Atualiza o valor
                 chaveExistente = true;
                 break;
             }
@@ -98,8 +97,9 @@ public class HashMap<K, V> implements Cloneable {
         }
     }
 
-    public void removaUmItem(K chave) throws Exception {
-        int hash = chave.hashCode(); // Correção aqui: método hashCode da chave
+    // Método para remover um item (alterado para o padrão "remove")
+    public void remove(K chave) throws Exception {
+        int hash = chave.hashCode();
         int indice = Math.abs(hash) % vetor.length;
 
         ListaSimplesDesordenada<Element> lista = vetor[indice];
@@ -116,8 +116,8 @@ public class HashMap<K, V> implements Cloneable {
                     qtdPosOcupadas--;
                 }
 
-                if ((vetor.length - qtdElems) / (float) vetor.length > txMinDesperdicio
-                        && vetor.length > capacidadeInicial) {
+                // Verifica se a redução de tamanho é necessária
+                if ((vetor.length - qtdElems) / (float) vetor.length > txMinDesperdicio && vetor.length > capacidadeInicial) {
                     redimensionarVetor(vetor.length / 2);
                 }
 
@@ -127,7 +127,7 @@ public class HashMap<K, V> implements Cloneable {
         throw new NoSuchElementException("Chave não encontrada: " + chave);
     }
 
-    // METODO PARA REDIMENCIONAR ITEM
+    // Método para redimensionar o vetor
     @SuppressWarnings("unchecked")
     private void redimensionarVetor(int novaCapacidade) throws Exception {
         ListaSimplesDesordenada<Element>[] novoVetor = new ListaSimplesDesordenada[novaCapacidade];
@@ -135,7 +135,7 @@ public class HashMap<K, V> implements Cloneable {
         for (ListaSimplesDesordenada<Element> lista : vetor) {
             if (lista != null) {
                 for (Element elem : lista) {
-                    int hash = elem.getChave().hashCode(); // Correção aqui
+                    int hash = elem.getChave().hashCode();
                     int indice = Math.abs(hash) % novaCapacidade;
 
                     if (novoVetor[indice] == null) {
@@ -150,8 +150,9 @@ public class HashMap<K, V> implements Cloneable {
         vetor = novoVetor;
     }
 
-    public V recupereUmItem(K chave) throws Exception {
-        int hash = chave.hashCode(); // Correção aqui: método hashCode da chave
+    // Método para recuperar um item
+    public V get(K chave) throws Exception {
+        int hash = chave.hashCode();
         int indice = Math.abs(hash) % vetor.length;
 
         ListaSimplesDesordenada<Element> lista = vetor[indice];
@@ -168,8 +169,8 @@ public class HashMap<K, V> implements Cloneable {
         throw new NoSuchElementException("Chave não encontrada: " + chave);
     }
 
-    // Método para retornar as chaves armazenadas no HashMap
-    public Iterable<K> getChaves() throws Exception {
+    // Método para retornar as chaves armazenadas
+    public Iterable<K> keySet() throws Exception {
         ListaSimplesDesordenada<K> chaves = new ListaSimplesDesordenada<>();
         for (ListaSimplesDesordenada<Element> lista : vetor) {
             if (lista != null) {
@@ -181,6 +182,7 @@ public class HashMap<K, V> implements Cloneable {
         return chaves;
     }
 
+    // Método toString
     public String toString() {
         StringBuilder result = new StringBuilder("{");
         boolean primeiroElemento = true;
@@ -201,30 +203,27 @@ public class HashMap<K, V> implements Cloneable {
         return result.toString();
     }
 
-    public int getQtdElems() {
+    public int size() {
         return qtdElems;
     }
 
-    // 1. Método get (equivalente a recupereUmItem)
-    public V get(K chave) throws Exception {
-        return recupereUmItem(chave); // Aproveitando o método já existente
-    }
-
-    // 2. Método size
-    public int size() {
-        return qtdElems; // Retorna a quantidade de elementos
-    }
-
-    // 3. Método keySet
-    public java.util.Set<K> keySet() {
-        java.util.Set<K> chaves = new java.util.HashSet<>();
-        for (ListaSimplesDesordenada<Element> lista : vetor) {
-            if (lista != null) {
-                for (Element elem : lista) {
-                    chaves.add(elem.getChave());
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object clone() {
+        try {
+            HashMap<K, V> clone = (HashMap<K, V>) super.clone();
+            clone.vetor = new ListaSimplesDesordenada[vetor.length];
+            
+            for (int i = 0; i < vetor.length; i++) {
+                if (vetor[i] != null) {
+                    clone.vetor[i] = (ListaSimplesDesordenada<Element>) vetor[i].clone();  // Aqui está o cast correto
                 }
             }
+    
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new InternalError(e);
         }
-        return chaves;
     }
+    
 }
