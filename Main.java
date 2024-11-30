@@ -14,7 +14,7 @@ public class Main {
 
             // caminho no windows
             String caminhoArquivoTxt1 = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste1.txt";
-            // String caminhoArquivoTxt2 ="C:\\Users\\NatalyJessica\\Documents\\teste2.txt";
+            String caminhoArquivoTxt2 ="C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste2.txt";
             String caminhoArquivoPdf = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste3.pdf";
             String caminhoArquivoImg = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste4.jpg";
             // String caminhoArquivoMp3 = "C:\\Users\\NatalyJessica\\Documents\\teste5.mp3";
@@ -22,9 +22,9 @@ public class Main {
             // String caminhoArquivoEXE ="C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";;
             String img = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\imgteste.jpg";
 
-            String caminhoArquivoCompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\imgteste.huffman";
-            String caminhoArquivoDescompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\imgteste.jpg";
-            Huffman.compactarArquivo(caminhoArquivoImg, caminhoArquivoCompactado);
+            String caminhoArquivoCompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\historia.huffman";
+            String caminhoArquivoDescompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\historia.txt";
+            Huffman.compactarArquivo(caminhoArquivoTxt2, caminhoArquivoCompactado);
            // descompactarArquivo(caminhoArquivoCompactado, caminhoArquivoDescompactado, raiz);
            Huffman.descompactarArquivo(caminhoArquivoCompactado, caminhoArquivoDescompactado);
 
