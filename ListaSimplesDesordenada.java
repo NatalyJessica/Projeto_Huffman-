@@ -250,6 +250,7 @@ public class ListaSimplesDesordenada<X> implements Iterable<X> {
         return false;
     }
 
+
     // Método para verificar se a lista está vazia
     public boolean isVazia() {
         return this.primeiro == null;
