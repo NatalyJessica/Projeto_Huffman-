@@ -5,6 +5,7 @@
 //import java.io.FileReader;
 //import java.io.RandomAccessFile;
 import java.io.*;
+import java.util.Arrays;
 
 public class Huffman {
 
@@ -166,51 +167,58 @@ public class Huffman {
     public static void compactarArquivo(String caminhoArquivoOriginal, String caminhoArquivoCompactado) throws Exception {
         // Ler os dados do arquivo original
         byte[] dados = lerArquivo(caminhoArquivoOriginal);
+        System.out.println("Dados lidos do arquivo original: " + Arrays.toString(dados));
 
         // Calcular a frequência dos bytes
         HashMap<Byte, Integer> frequencias = calcularFrequencia(dados);
+        System.out.println("Frequências calculadas: " + frequencias);
 
         // Criar a fila de prioridade
         FilaDePrioridade<NoHuffman> filaDePrioridade = criaFilaDePrioridade(frequencias);
+        System.out.println("Fila de prioridade criada: " + filaDePrioridade);
 
         // Construir a árvore de Huffman
         NoHuffman raiz = construirArvoreDeHuffman(filaDePrioridade);
-
-        System.out.println("Raiz da arvore: " + raiz);
+        System.out.println("Árvore de Huffman construída. Raiz: " + raiz);
 
         // Gerar os códigos de Huffman
         HashMap<Byte, String> codigos = gerarCodigos(raiz);
+        System.out.println("Códigos de Huffman gerados: " + codigos);
 
         // Converter os dados do arquivo original para uma sequência de bits compactados
         StringBuilder bitsCompactados = new StringBuilder();
         for (byte b : dados) {
-            System.out.println("dados do arquivo:" + b);
             bitsCompactados.append(codigos.get(b));
         }
+        System.out.println("Bits compactados gerados: " + bitsCompactados);
 
         // Salvar a árvore de Huffman e os dados compactados no arquivo de saída
         try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(caminhoArquivoCompactado))) {
+            System.out.println("Iniciando salvamento no arquivo compactado.");
 
-            System.out.println("Salvando arvore: " + outputStream);
             // Salvar a árvore de Huffman no início do arquivo
             salvarArvoreHuffman(outputStream, raiz);
+            System.out.println("Árvore de Huffman salva no arquivo.");
 
-            // Salvar o número total de bits compactados (para descompactação futura)
+            // Salvar o número total de bits compactados
             outputStream.writeInt(bitsCompactados.length());
+            System.out.println("Número total de bits compactados salvo: " + bitsCompactados.length());
 
-            // Salvar os dados compactados em forma de bytes
+            // Salvar os dados compactados como bytes
             byte[] bytesCompactados = converterBitsParaBytes(bitsCompactados.toString());
-            System.out.println("Dados Compactados" + bytesCompactados);
+            System.out.println("Bytes compactados gerados: " + Arrays.toString(bytesCompactados));
             outputStream.write(bytesCompactados);
         }
     }
 
     private static void salvarArvoreHuffman(DataOutputStream outputStream, NoHuffman no) throws Exception {
         if (no.isFolha()) {
-            outputStream.writeBoolean(true);  // Indica que é folha
-            outputStream.writeByte(no.getDado());  // Salva o byte da folha
+            System.out.println("Salvando nó folha: " + no.getDado());
+            outputStream.writeBoolean(true);
+            outputStream.writeByte(no.getDado());
         } else {
-            outputStream.writeBoolean(false); // Indica que não é folha
+            System.out.println("Salvando nó interno.");
+            outputStream.writeBoolean(false);
             salvarArvoreHuffman(outputStream, no.getFilhoEsquerdo());
             salvarArvoreHuffman(outputStream, no.getFilhoDireito());
         }
@@ -232,76 +240,93 @@ public class Huffman {
     }
 
     public static void descompactarArquivo(String caminhoArquivoCompactado, String caminhoArquivoDescompactado) throws Exception {
-        try (BufferedReader reader = new BufferedReader(new FileReader(caminhoArquivoCompactado))) {
-            // Reconstruir a árvore de Huffman a partir do arquivo compactado
-            NoHuffman raiz = reconstruirArvoreHuffman(reader);
-
-            // Ler os dados compactados (bits)
-            StringBuilder bitsCompactados = new StringBuilder();
-            int caractere;
-            while ((caractere = reader.read()) != -1) {
-                bitsCompactados.append((char) caractere);
-            }
-
-            // Decodificar os bits usando a árvore de Huffman
-            byte[] dadosOriginais = decodificarBits(bitsCompactados.toString(), raiz);
-
-            // Escrever os dados decodificados no arquivo de saída
-            try (FileOutputStream fos = new FileOutputStream(caminhoArquivoDescompactado)) {
-                fos.write(dadosOriginais);
+        // Ler o arquivo compactado
+        byte[] dadosCompactados = lerArquivo(caminhoArquivoCompactado);
+        System.out.println("Dados lidos do arquivo compactado: " + Arrays.toString(dadosCompactados));
+    
+        // Cria o DataInputStream para ler do arquivo compactado
+        try (DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(dadosCompactados))) {
+            // Reconstruir a árvore de Huffman
+            NoHuffman raiz = reconstruirArvoreHuffman(inputStream);
+            System.out.println("Árvore de Huffman reconstruída: " + raiz);
+    
+            // Ler o número total de bits compactados
+            int numeroBits = inputStream.readInt();
+            System.out.println("Número total de bits compactados: " + numeroBits);
+    
+            // Ler os bytes compactados
+            byte[] bytesCompactados = new byte[(numeroBits + 7) / 8];
+            inputStream.readFully(bytesCompactados);
+    
+            // Converter os bytes compactados para a sequência de bits
+            String bitsCompactados = converterBytesParaBits(bytesCompactados);
+            System.out.println("Bits compactados lidos: " + bitsCompactados);
+    
+            // Descompactar os bits usando a árvore de Huffman
+            byte[] dadosDescompactados = descompactarBits(bitsCompactados, raiz);
+    
+            // Salvar os dados descompactados no arquivo
+            try (FileOutputStream outputStream = new FileOutputStream(caminhoArquivoDescompactado)) {
+                outputStream.write(dadosDescompactados);
+                System.out.println("Arquivo descompactado salvo.");
             }
         }
     }
-
-// Método recursivo para reconstruir a árvore de Huffman
-    private static NoHuffman reconstruirArvoreHuffman(BufferedReader reader) throws Exception {
-        int tipoNo = reader.read();
-        System.out.println("Lido: " + tipoNo); // Verifique o valor lido
-
-        if (tipoNo == 49) { // ASCII de '1'
-            byte dado = (byte) reader.read();
-            System.out.println("Lido dado: " + dado); // Verifique o dado lido
-            return new NoHuffman(dado, 0);
-        } else if (tipoNo == 48) { // ASCII de '0'
-            NoHuffman filhoEsquerdo = reconstruirArvoreHuffman(reader);
-            NoHuffman filhoDireito = reconstruirArvoreHuffman(reader);
-            return new NoHuffman(filhoEsquerdo, filhoDireito);
+    
+    private static NoHuffman reconstruirArvoreHuffman(DataInputStream inputStream) throws Exception {
+        boolean ehFolha = inputStream.readBoolean();
+    
+        if (ehFolha) {
+            byte dado = inputStream.readByte();
+            return new NoHuffman(dado, 0); // Frequência 0, já que a frequência não é necessária para folhas
         } else {
-            throw new Exception("Erro na reconstrução da árvore de Huffman. Valor inválido: " + tipoNo);
+            NoHuffman filhoEsquerdo = reconstruirArvoreHuffman(inputStream);
+            NoHuffman filhoDireito = reconstruirArvoreHuffman(inputStream);
+            return new NoHuffman(filhoEsquerdo, filhoDireito);
         }
     }
 
-// Método para decodificar os bits compactados
-    private static byte[] decodificarBits(String bitsCompactados, NoHuffman raiz) throws Exception {
-        ListaSimplesDesordenada<Byte> dadosOriginais = new ListaSimplesDesordenada<>();
-        NoHuffman atual = raiz;
+    private static String converterBytesParaBits(byte[] bytes) {
+        StringBuilder bits = new StringBuilder();
+    
+        for (byte b : bytes) {
+            for (int i = 7; i >= 0; i--) {
+                bits.append((b >> i) & 1);
+            }
+        }
+    
+        return bits.toString();
+    }
+    
 
-        for (char bit : bitsCompactados.toCharArray()) {
-            // Navega na árvore com base no bit atual
+    private static byte[] descompactarBits(String bitsCompactados, NoHuffman raiz) {
+        StringBuilder resultado = new StringBuilder();
+        NoHuffman noAtual = raiz;
+        for (int i = 0; i < bitsCompactados.length(); i++) {
+            char bit = bitsCompactados.charAt(i);
+            
+            // Desce pela árvore de Huffman de acordo com o bit
             if (bit == '0') {
-                atual = atual.getFilhoEsquerdo();
-            } else if (bit == '1') {
-                atual = atual.getFilhoDireito();
+                noAtual = noAtual.getFilhoEsquerdo();
+            } else {
+                noAtual = noAtual.getFilhoDireito();
             }
-
-            // Se chegar em uma folha, recupera o dado
-            if (atual.isFolha()) {
-                dadosOriginais.guardeUmItemNoFinal(atual.getDado());
-                atual = raiz; // Retorna para a raiz para continuar a decodificação
+    
+            // Se chegou em uma folha, adicione o byte correspondente ao resultado
+            if (noAtual.isFolha()) {
+                resultado.append((char) noAtual.getDado());
+                noAtual = raiz; // Volta para a raiz da árvore para processar o próximo byte
             }
         }
-
-        // Converte a ListaSimplesDesordenada para um array de bytes
-        byte[] resultado = new byte[dadosOriginais.getQuantidade()];
-        int i = 0;
-
-        // Itera pelos elementos da lista e os adiciona ao array
-        while (!dadosOriginais.isVazia()) {
-            resultado[i++] = dadosOriginais.recupereItemDoInicio();
-            dadosOriginais.recupereItemDoInicio();
+    
+        // Converte a String resultante em um array de bytes
+        byte[] dadosDescompactados = new byte[resultado.length()];
+        for (int i = 0; i < resultado.length(); i++) {
+            dadosDescompactados[i] = (byte) resultado.charAt(i);
         }
-
-        return resultado;
+    
+        return dadosDescompactados;
     }
-
+    
+    
 }

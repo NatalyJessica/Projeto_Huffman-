@@ -26,9 +26,11 @@ public class Main {
 
            //oque realmente vai ser rodado
             String caminhoArquivoCompactado = "/Users/u21446/Documents/Projeto_Huffman-/arquivoteste.huffman";
-            String caminhoArquivoDescompactado = "/Users/u21446/Documents/Projeto_Huffman-/arquivoteste.txt";
-            Huffman.compactarArquivo(caminhoArquivoTxt1, caminhoArquivoCompactado);
-            //Huffman.descompactarArquivo(caminhoArquivoCompactado, caminhoArquivoDescompactado);
+            String caminhoArquivoDescompactado = "/Users/u21446/Documents/Projeto_Huffman-/arquivoteste.pdf";
+            Huffman.compactarArquivo(caminhoArquivoPdf, caminhoArquivoCompactado);
+            System.out.println("Caminho do arquivo compactado: " + caminhoArquivoCompactado);
+
+            Huffman.descompactarArquivo(caminhoArquivoCompactado, caminhoArquivoDescompactado);
 
         
            //TESTEES
