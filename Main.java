@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Main {
     public static void main(String[] args) {
 
@@ -13,20 +15,29 @@ public class Main {
             // ="C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";
 
             // caminho no windows
-            String caminhoArquivoTxt1 = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste1.txt";
-            String caminhoArquivoTxt2 ="C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste2.txt";
+            //String caminhoArquivoTxt1 = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste1.txt";
+            //String caminhoArquivoTxt2 ="C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste2.txt";
             String caminhoArquivoPdf = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste3.pdf";
-            String caminhoArquivoImg = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste4.jpg";
+            //String caminhoArquivoImg = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste4.jpg";
             // String caminhoArquivoMp3 = "C:\\Users\\NatalyJessica\\Documents\\teste5.mp3";
             // String caminhoArquivoMp4 = "C:\\Users\\NatalyJessica\\Documents\\teste6.mp4";
             // String caminhoArquivoEXE ="C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";;
-            String img = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\imgteste.jpg";
+           // String img = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\imgteste.jpg";
 
-            String caminhoArquivoCompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\historia.huffman";
-            String caminhoArquivoDescompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\historia.txt";
-            Huffman.compactarArquivo(caminhoArquivoTxt2, caminhoArquivoCompactado);
+           // String caminhoArquivoCompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\historia.huffman";
+            //String caminhoArquivoDescompactado = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\historia.txt";
+            //Huffman.compactarArquivo(caminhoArquivoTxt2, caminhoArquivoCompactado);
            // descompactarArquivo(caminhoArquivoCompactado, caminhoArquivoDescompactado, raiz);
-           Huffman.descompactarArquivo(caminhoArquivoCompactado, caminhoArquivoDescompactado);
+           //Huffman.descompactarArquivo(caminhoArquivoCompactado, caminhoArquivoDescompactado);
+
+
+
+           //TESTEES
+
+           byte [] dados = Huffman.lerArquivo(caminhoArquivoPdf);
+           System.out.println("dados: " + Arrays.toString(dados));
+           HashMap<Byte, Integer> frequencias = Huffman.calcularFrequencia(dados);
+           System.out.println(frequencias);
 
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());

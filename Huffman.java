@@ -6,40 +6,44 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class Huffman {
-    public static class NoHuffman implements Comparable<NoHuffman> {
-        private char caractere; // O caractere representado (usado nas folhas)
-        private int frequencia; // A frequência do caractere
+    private static class NoHuffman implements Comparable<NoHuffman> {
+        private byte dado; // O byte representado (usado nas folhas)
+        private int frequencia; // A frequência do byte
         private NoHuffman filhoEsquerdo; // Filho esquerdo do nó
         private NoHuffman filhoDireito; // Filho direito do nó
 
-        // Construtor para nó folha (com caractere e frequência)
-        public NoHuffman(char caractere, int frequencia) {
-            this.caractere = caractere;
+        // Construtor para nó folha (com byte e frequência)
+        public NoHuffman(byte dado, int frequencia) {
+            this.dado = dado;
             this.frequencia = frequencia;
             this.filhoEsquerdo = null;
             this.filhoDireito = null;
         }
 
-        // Construtor para nó interno (sem caractere, com filhos esquerdo e direito)
+        // Construtor para nó interno (sem dado, com filhos esquerdo e direito)
         public NoHuffman(NoHuffman filhoEsquerdo, NoHuffman filhoDireito) {
-            this.caractere = '\0'; // Caractere vazio para nós internos
+            this.dado = '\0'; // Byte vazio para nós internos (usado como marcador)
             this.frequencia = filhoEsquerdo.frequencia + filhoDireito.frequencia; // Frequência combinada
             this.filhoEsquerdo = filhoEsquerdo;
             this.filhoDireito = filhoDireito;
         }
 
-        public char getCaractere() {
-            return caractere;
+        // Getter para o dado (byte)
+        public byte getDado() {
+            return dado;
         }
 
+        // Getter para a frequência
         public int getFrequencia() {
             return frequencia;
         }
 
+        // Getter para o filho esquerdo
         public NoHuffman getFilhoEsquerdo() {
             return filhoEsquerdo;
         }
 
+        // Getter para o filho direito
         public NoHuffman getFilhoDireito() {
             return filhoDireito;
         }
@@ -52,14 +56,14 @@ public class Huffman {
             return Integer.compare(this.frequencia, o.frequencia);
         }
 
-        // Método toString
+        // Método toString para visualização do nó
         @Override
         public String toString() {
-            return "{caractere=" + (caractere == '\0' ? "interno" : caractere)
+            return "{dado=" + (dado == '\0' ? "interno" : dado)
                     + ", frequencia=" + frequencia + "}\n";
         }
 
-        // Verifica se o nó é uma folha
+        // Verifica se o nó é uma folha (se não tem filhos)
         public boolean isFolha() {
             return filhoEsquerdo == null && filhoDireito == null;
         }
@@ -74,42 +78,52 @@ public class Huffman {
         }
     }
 
-    // Calcular frequencia
-    public static HashMap<Character, Integer> calcularFrequencia(byte[] dados) throws Exception {
-        // Cria o HashMap para armazenar a frequência dos caracteres
-        HashMap<Character, Integer> frequencias = new HashMap<>(256, 0.25f, 0.75f);
+    public static HashMap<Byte, Integer> calcularFrequencia(byte[] dados) throws Exception {
+        // Cria o HashMap para armazenar a frequência dos bytes
+        HashMap<Byte, Integer> frequencias = new HashMap<>(256, 0.75f, 0.5f);
+
         // Percorre os dados e calcula a frequência
         for (byte b : dados) {
-            char caractere = (char) b;
-            try {
-                // Recupera a frequência atual (se existir)
-                int freqAtual = frequencias.get(caractere);
-                // Incrementa a frequência
-                frequencias.put(caractere, freqAtual + 1);
-            } catch (Exception e) {
-                // Se não existir, adiciona com frequência inicial de 1
-                frequencias.put(caractere, 1);
-            }
+            frequencias.put(b, frequencias.getValorPadrão(b, 0) + 1);
         }
         return frequencias;
     }
 
     // Método que cria a fila de prioridade com base nas frequências
-    public static FilaDePrioridade<NoHuffman> criaFilaDePrioridade(HashMap<Character, Integer> frequencias)
+    // Método que cria a fila de prioridade com base nas frequências
+    public static FilaDePrioridade<NoHuffman> criaFilaDePrioridade(HashMap<Byte, Integer> frequencias)
             throws Exception {
         // Cria uma fila de prioridade (min-heap) para armazenar os nós de Huffman
-        FilaDePrioridade<NoHuffman> filaDePrioridade = new FilaDePrioridade<NoHuffman>(frequencias.size());
+        FilaDePrioridade<NoHuffman> filaDePrioridade = new FilaDePrioridade<>(frequencias.size());
 
-        // Para cada caractere e sua frequência, cria um nó e insere na fila
-        for (Character c : frequencias.keySet()) {
-            NoHuffman novoNo = new NoHuffman(c, frequencias.get(c));
+        // Para cada byte e sua frequência, cria um nó e insere na fila
+        for (Byte b : frequencias.keySet()) {
+            NoHuffman novoNo = new NoHuffman(b, frequencias.get(b));
             filaDePrioridade.guardeUmItem(novoNo);
         }
 
         return filaDePrioridade;
     }
 
-    public static NoHuffman construirArvoreDeHuffman(FilaDePrioridade<NoHuffman> filaDePrioridade) throws Exception {
+    /*
+     * public static FilaDePrioridade<NoHuffman>
+     * criaFilaDePrioridade(HashMap<Character, Integer> frequencias)
+     * throws Exception {
+     * // Cria uma fila de prioridade (min-heap) para armazenar os nós de Huffman
+     * FilaDePrioridade<NoHuffman> filaDePrioridade = new
+     * FilaDePrioridade<NoHuffman>(frequencias.size());
+     * 
+     * // Para cada caractere e sua frequência, cria um nó e insere na fila
+     * for (Character c : frequencias.keySet()) {
+     * NoHuffman novoNo = new NoHuffman(c, frequencias.get(c));
+     * filaDePrioridade.guardeUmItem(novoNo);
+     * }
+     * 
+     * return filaDePrioridade;
+     * }
+     */
+
+    /*public static NoHuffman construirArvoreDeHuffman(FilaDePrioridade<NoHuffman> filaDePrioridade) throws Exception {
         // Enquanto houver mais de um nó na fila de prioridade, continue combinando
         while (filaDePrioridade.getSize() > 1) {
             // Extrai os dois nós com menor frequência
@@ -125,10 +139,10 @@ public class Huffman {
 
         // Ao final, resta apenas um nó na fila, que é a raiz da árvore
         return filaDePrioridade.remove();
-    }
+    }*/
 
     // Método modificado para retornar o HashMap com os códigos
-    public static HashMap<Character, String> gerarCodigos(NoHuffman no) throws Exception {
+   /*  public static HashMap<Character, String> gerarCodigos(NoHuffman no) throws Exception {
         HashMap<Character, String> codigos = new HashMap<Character, String>(); // Criar o HashMap dentro do método
 
         // Função recursiva para gerar os códigos
@@ -155,56 +169,63 @@ public class Huffman {
         if (no.getFilhoDireito() != null) {
             gerarCodigosRecursivo(no.getFilhoDireito(), codigoAtual + "1", codigos);
         }
-    }
+    }*/
 
-    public static void compactarArquivo(String caminhoArquivoOriginal, String caminhoArquivoCompactado)
-            throws Exception {
-        byte[] dados = lerArquivo(caminhoArquivoOriginal);
+    /*
+     * public static void compactarArquivo(String caminhoArquivoOriginal, String
+     * caminhoArquivoCompactado)
+     * throws Exception {
+     * byte[] dados = lerArquivo(caminhoArquivoOriginal);
+     * 
+     * // Calcular a frequência dos caracteres
+     * HashMap<Character, Integer> frequencias = calcularFrequencia(dados);
+     * 
+     * // Criar a fila de prioridade
+     * FilaDePrioridade<NoHuffman> filaDePrioridade =
+     * criaFilaDePrioridade(frequencias);
+     * 
+     * // Construir a árvore de Huffman
+     * NoHuffman raiz = construirArvoreDeHuffman(filaDePrioridade);
+     * 
+     * // Gerar os códigos de Huffman
+     * HashMap<Character, String> codigos = gerarCodigos(raiz);
+     * 
+     * // Converter os dados para sequência de bits
+     * StringBuilder bitsCompactados = new StringBuilder();
+     * for (byte b : dados) {
+     * char caractere = (char) b;
+     * bitsCompactados.append(codigos.get(caractere));
+     * }
+     * 
+     * try (BufferedWriter writer = new BufferedWriter(new
+     * FileWriter(caminhoArquivoCompactado))) {
+     * // Salvar a árvore de Huffman no início do arquivo (em formato binário ou
+     * texto)
+     * salvarArvoreHuffman(writer, raiz);
+     * 
+     * // Salvar os dados compactados
+     * writer.write(bitsCompactados.toString());
+     * }
+     * }
+     * 
+     * // Método recursivo para salvar a árvore de Huffman no arquivo
+     * private static void salvarArvoreHuffman(BufferedWriter writer, NoHuffman no)
+     * throws IOException {
+     * if (no.isFolha()) {
+     * // Se for uma folha, salvar o caractere e indicar que é uma folha
+     * writer.write("1");
+     * writer.write(no.getCaractere());
+     * } else {
+     * // Se for um nó interno, salvar a indicação de que não é folha
+     * writer.write("0");
+     * // Recursivamente salvar os filhos esquerdo e direito
+     * salvarArvoreHuffman(writer, no.getFilhoEsquerdo());
+     * salvarArvoreHuffman(writer, no.getFilhoDireito());
+     * }
+     * }
+     */
 
-        // Calcular a frequência dos caracteres
-        HashMap<Character, Integer> frequencias = calcularFrequencia(dados);
-
-        // Criar a fila de prioridade
-        FilaDePrioridade<NoHuffman> filaDePrioridade = criaFilaDePrioridade(frequencias);
-
-        // Construir a árvore de Huffman
-        NoHuffman raiz = construirArvoreDeHuffman(filaDePrioridade);
-
-        // Gerar os códigos de Huffman
-        HashMap<Character, String> codigos = gerarCodigos(raiz);
-
-        // Converter os dados para sequência de bits
-        StringBuilder bitsCompactados = new StringBuilder();
-        for (byte b : dados) {
-            char caractere = (char) b;
-            bitsCompactados.append(codigos.get(caractere));
-        }
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminhoArquivoCompactado))) {
-            // Salvar a árvore de Huffman no início do arquivo (em formato binário ou texto)
-            salvarArvoreHuffman(writer, raiz);
-
-            // Salvar os dados compactados
-            writer.write(bitsCompactados.toString());
-        }
-    }
-
-    // Método recursivo para salvar a árvore de Huffman no arquivo
-    private static void salvarArvoreHuffman(BufferedWriter writer, NoHuffman no) throws IOException {
-        if (no.isFolha()) {
-            // Se for uma folha, salvar o caractere e indicar que é uma folha
-            writer.write("1");
-            writer.write(no.getCaractere());
-        } else {
-            // Se for um nó interno, salvar a indicação de que não é folha
-            writer.write("0");
-            // Recursivamente salvar os filhos esquerdo e direito
-            salvarArvoreHuffman(writer, no.getFilhoEsquerdo());
-            salvarArvoreHuffman(writer, no.getFilhoDireito());
-        }
-    }
-
-    public static void descompactarArquivo(String caminhoArquivoCompactado, String caminhoArquivoDescompactado)
+   /*  public static void descompactarArquivo(String caminhoArquivoCompactado, String caminhoArquivoDescompactado)
             throws Exception {
         // Ler os dados compactados e a árvore de Huffman
         StringBuilder bitsCompactados = new StringBuilder();
@@ -245,9 +266,9 @@ public class Huffman {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminhoArquivoDescompactado))) {
             writer.write(dadosDescompactados.toString());
         }
-    }
+    }*/
 
-    private static NoHuffman reconstruirArvoreHuffman(BufferedReader reader) throws IOException {
+   /*  private static NoHuffman reconstruirArvoreHuffman(BufferedReader reader) throws IOException {
         int bit = reader.read();
         if (bit == '1') {
             // Se for folha, ler o caractere e retornar o nó folha
@@ -259,6 +280,6 @@ public class Huffman {
             NoHuffman filhoDireito = reconstruirArvoreHuffman(reader);
             return new NoHuffman(filhoEsquerdo, filhoDireito);
         }
-    }
+    }*/
 
 }
