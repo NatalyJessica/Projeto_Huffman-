@@ -1,12 +1,9 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+
 public class Huffman {
-    private static class NoHuffman implements Comparable<NoHuffman> {
+    public static class NoHuffman implements Comparable<NoHuffman> {
         private byte dado; // O byte representado (usado nas folhas)
         private int frequencia; // A frequência do byte
         private NoHuffman filhoEsquerdo; // Filho esquerdo do nó
@@ -89,21 +86,36 @@ public class Huffman {
         return frequencias;
     }
 
-    // Método que cria a fila de prioridade com base nas frequências
-    // Método que cria a fila de prioridade com base nas frequências
-    public static FilaDePrioridade<NoHuffman> criaFilaDePrioridade(HashMap<Byte, Integer> frequencias)
-            throws Exception {
-        // Cria uma fila de prioridade (min-heap) para armazenar os nós de Huffman
-        FilaDePrioridade<NoHuffman> filaDePrioridade = new FilaDePrioridade<>(frequencias.size());
+        // Método que cria a fila de prioridade com base nas frequências
+        public static FilaDePrioridade<NoHuffman> criaFilaDePrioridade(HashMap<Byte, Integer> frequencias) throws Exception {
+            // Criação da lista de nós de Huffman a partir das frequências usando ListaSimplesDesordenada
+            ListaSimplesDesordenada<NoHuffman> nos = new ListaSimplesDesordenada<>();
+            System.out.println("ate aqui");
+            // Preenchendo a lista com os nós de Huffman
+            for (Byte dado : frequencias.keySet()) {
+                System.out.println("entrouNoFor");
+                int frequencia = frequencias.get(dado);
+                // Criação do nó para cada byte e frequência
+                nos.guardeUmItemNoFinal(new NoHuffman(dado, frequencia));
+                System.out.println("Guardou na lista");
+            }
+    
+            // Criando a fila de prioridade com base nos nós de Huffman
+            FilaDePrioridade<NoHuffman> fila = new FilaDePrioridade<NoHuffman>();
+            System.out.println("fila criada");
 
-        // Para cada byte e sua frequência, cria um nó e insere na fila
-        for (Byte b : frequencias.keySet()) {
-            NoHuffman novoNo = new NoHuffman(b, frequencias.get(b));
-            filaDePrioridade.guardeUmItem(novoNo);
+            
+            // Ordena a lista de nós de Huffman conforme a frequência
+            while (!nos.isVazia()) {
+                NoHuffman no = nos.recupereItemDoInicio(); // Recupera o primeiro nó
+                fila.guardeUmItem(no); // Adiciona o nó à fila de prioridade
+                nos.removaItemIndicado(no); // Remove o nó da lista para evitar o loop infinito
+                System.out.println("GUARDOU NA FILA");
+            }
+            System.out.println(fila);
+            return fila;
         }
-
-        return filaDePrioridade;
-    }
+    
 
     /*
      * public static FilaDePrioridade<NoHuffman>
@@ -123,53 +135,63 @@ public class Huffman {
      * }
      */
 
-    /*public static NoHuffman construirArvoreDeHuffman(FilaDePrioridade<NoHuffman> filaDePrioridade) throws Exception {
-        // Enquanto houver mais de um nó na fila de prioridade, continue combinando
-        while (filaDePrioridade.getSize() > 1) {
-            // Extrai os dois nós com menor frequência
-            NoHuffman no1 = filaDePrioridade.remove();
-            NoHuffman no2 = filaDePrioridade.remove();
-
-            // Cria um novo nó interno com a soma das frequências
-            NoHuffman noInterno = new NoHuffman(no1, no2);
-
-            // Insere o novo nó interno de volta na fila de prioridade
-            filaDePrioridade.guardeUmItem(noInterno);
-        }
-
-        // Ao final, resta apenas um nó na fila, que é a raiz da árvore
-        return filaDePrioridade.remove();
-    }*/
+    /*
+     * public static NoHuffman construirArvoreDeHuffman(FilaDePrioridade<NoHuffman>
+     * filaDePrioridade) throws Exception {
+     * // Enquanto houver mais de um nó na fila de prioridade, continue combinando
+     * while (filaDePrioridade.getSize() > 1) {
+     * // Extrai os dois nós com menor frequência
+     * NoHuffman no1 = filaDePrioridade.remove();
+     * NoHuffman no2 = filaDePrioridade.remove();
+     * 
+     * // Cria um novo nó interno com a soma das frequências
+     * NoHuffman noInterno = new NoHuffman(no1, no2);
+     * 
+     * // Insere o novo nó interno de volta na fila de prioridade
+     * filaDePrioridade.guardeUmItem(noInterno);
+     * }
+     * 
+     * // Ao final, resta apenas um nó na fila, que é a raiz da árvore
+     * return filaDePrioridade.remove();
+     * }
+     */
 
     // Método modificado para retornar o HashMap com os códigos
-   /*  public static HashMap<Character, String> gerarCodigos(NoHuffman no) throws Exception {
-        HashMap<Character, String> codigos = new HashMap<Character, String>(); // Criar o HashMap dentro do método
-
-        // Função recursiva para gerar os códigos
-        gerarCodigosRecursivo(no, "", codigos);
-
-        return codigos; // Retornar o HashMap com os códigos
-    }
-
-    private static void gerarCodigosRecursivo(NoHuffman no, String codigoAtual, HashMap<Character, String> codigos)
-            throws Exception {
-        // Se o nó for uma folha, significa que é um caractere, então guardamos o código
-        if (no.isFolha()) {
-            codigos.put(no.getCaractere(), codigoAtual); // Aqui chamamos o método correto da sua classe
-                                                         // HashMap
-            return;
-        }
-
-        // Recursão para o filho esquerdo (adiciona '0' ao código)
-        if (no.getFilhoEsquerdo() != null) {
-            gerarCodigosRecursivo(no.getFilhoEsquerdo(), codigoAtual + "0", codigos);
-        }
-
-        // Recursão para o filho direito (adiciona '1' ao código)
-        if (no.getFilhoDireito() != null) {
-            gerarCodigosRecursivo(no.getFilhoDireito(), codigoAtual + "1", codigos);
-        }
-    }*/
+    /*
+     * public static HashMap<Character, String> gerarCodigos(NoHuffman no) throws
+     * Exception {
+     * HashMap<Character, String> codigos = new HashMap<Character, String>(); //
+     * Criar o HashMap dentro do método
+     * 
+     * // Função recursiva para gerar os códigos
+     * gerarCodigosRecursivo(no, "", codigos);
+     * 
+     * return codigos; // Retornar o HashMap com os códigos
+     * }
+     * 
+     * private static void gerarCodigosRecursivo(NoHuffman no, String codigoAtual,
+     * HashMap<Character, String> codigos)
+     * throws Exception {
+     * // Se o nó for uma folha, significa que é um caractere, então guardamos o
+     * código
+     * if (no.isFolha()) {
+     * codigos.put(no.getCaractere(), codigoAtual); // Aqui chamamos o método
+     * correto da sua classe
+     * // HashMap
+     * return;
+     * }
+     * 
+     * // Recursão para o filho esquerdo (adiciona '0' ao código)
+     * if (no.getFilhoEsquerdo() != null) {
+     * gerarCodigosRecursivo(no.getFilhoEsquerdo(), codigoAtual + "0", codigos);
+     * }
+     * 
+     * // Recursão para o filho direito (adiciona '1' ao código)
+     * if (no.getFilhoDireito() != null) {
+     * gerarCodigosRecursivo(no.getFilhoDireito(), codigoAtual + "1", codigos);
+     * }
+     * }
+     */
 
     /*
      * public static void compactarArquivo(String caminhoArquivoOriginal, String
@@ -225,61 +247,70 @@ public class Huffman {
      * }
      */
 
-   /*  public static void descompactarArquivo(String caminhoArquivoCompactado, String caminhoArquivoDescompactado)
-            throws Exception {
-        // Ler os dados compactados e a árvore de Huffman
-        StringBuilder bitsCompactados = new StringBuilder();
-        NoHuffman raiz = null;
+    /*
+     * public static void descompactarArquivo(String caminhoArquivoCompactado,
+     * String caminhoArquivoDescompactado)
+     * throws Exception {
+     * // Ler os dados compactados e a árvore de Huffman
+     * StringBuilder bitsCompactados = new StringBuilder();
+     * NoHuffman raiz = null;
+     * 
+     * try (BufferedReader reader = new BufferedReader(new
+     * FileReader(caminhoArquivoCompactado))) {
+     * // Ler e reconstruir a árvore de Huffman
+     * raiz = reconstruirArvoreHuffman(reader);
+     * 
+     * // Ler os bits compactados
+     * String linha;
+     * while ((linha = reader.readLine()) != null) {
+     * bitsCompactados.append(linha);
+     * }
+     * }
+     * 
+     * // Descompactar os dados usando a árvore de Huffman
+     * StringBuilder dadosDescompactados = new StringBuilder();
+     * NoHuffman noAtual = raiz;
+     * for (int i = 0; i < bitsCompactados.length(); i++) {
+     * char bit = bitsCompactados.charAt(i);
+     * // Se o bit for '0', vá para o filho esquerdo, se for '1', vá para o filho
+     * // direito
+     * if (bit == '0') {
+     * noAtual = noAtual.getFilhoEsquerdo();
+     * } else if (bit == '1') {
+     * noAtual = noAtual.getFilhoDireito();
+     * }
+     * 
+     * // Se chegarmos a uma folha, significa que encontramos um caractere
+     * if (noAtual.isFolha()) {
+     * dadosDescompactados.append(noAtual.getCaractere());
+     * noAtual = raiz; // Voltar para a raiz para processar o próximo caractere
+     * }
+     * }
+     * 
+     * // Salvar os dados descompactados no arquivo
+     * try (BufferedWriter writer = new BufferedWriter(new
+     * FileWriter(caminhoArquivoDescompactado))) {
+     * writer.write(dadosDescompactados.toString());
+     * }
+     * }
+     */
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(caminhoArquivoCompactado))) {
-            // Ler e reconstruir a árvore de Huffman
-            raiz = reconstruirArvoreHuffman(reader);
-
-            // Ler os bits compactados
-            String linha;
-            while ((linha = reader.readLine()) != null) {
-                bitsCompactados.append(linha);
-            }
-        }
-
-        // Descompactar os dados usando a árvore de Huffman
-        StringBuilder dadosDescompactados = new StringBuilder();
-        NoHuffman noAtual = raiz;
-        for (int i = 0; i < bitsCompactados.length(); i++) {
-            char bit = bitsCompactados.charAt(i);
-            // Se o bit for '0', vá para o filho esquerdo, se for '1', vá para o filho
-            // direito
-            if (bit == '0') {
-                noAtual = noAtual.getFilhoEsquerdo();
-            } else if (bit == '1') {
-                noAtual = noAtual.getFilhoDireito();
-            }
-
-            // Se chegarmos a uma folha, significa que encontramos um caractere
-            if (noAtual.isFolha()) {
-                dadosDescompactados.append(noAtual.getCaractere());
-                noAtual = raiz; // Voltar para a raiz para processar o próximo caractere
-            }
-        }
-
-        // Salvar os dados descompactados no arquivo
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminhoArquivoDescompactado))) {
-            writer.write(dadosDescompactados.toString());
-        }
-    }*/
-
-   /*  private static NoHuffman reconstruirArvoreHuffman(BufferedReader reader) throws IOException {
-        int bit = reader.read();
-        if (bit == '1') {
-            // Se for folha, ler o caractere e retornar o nó folha
-            char caractere = (char) reader.read();
-            return new NoHuffman(caractere, 0); // Frequência será definida posteriormente, se necessário
-        } else {
-            // Se for nó interno, criar um nó e reconstruir os filhos recursivamente
-            NoHuffman filhoEsquerdo = reconstruirArvoreHuffman(reader);
-            NoHuffman filhoDireito = reconstruirArvoreHuffman(reader);
-            return new NoHuffman(filhoEsquerdo, filhoDireito);
-        }
-    }*/
+    /*
+     * private static NoHuffman reconstruirArvoreHuffman(BufferedReader reader)
+     * throws IOException {
+     * int bit = reader.read();
+     * if (bit == '1') {
+     * // Se for folha, ler o caractere e retornar o nó folha
+     * char caractere = (char) reader.read();
+     * return new NoHuffman(caractere, 0); // Frequência será definida
+     * posteriormente, se necessário
+     * } else {
+     * // Se for nó interno, criar um nó e reconstruir os filhos recursivamente
+     * NoHuffman filhoEsquerdo = reconstruirArvoreHuffman(reader);
+     * NoHuffman filhoDireito = reconstruirArvoreHuffman(reader);
+     * return new NoHuffman(filhoEsquerdo, filhoDireito);
+     * }
+     * }
+     */
 
 }

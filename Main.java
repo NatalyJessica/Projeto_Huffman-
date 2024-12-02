@@ -15,7 +15,7 @@ public class Main {
             // ="C:\\Users\\NatalyJessica\\Documents\\7z2408-x64.exe";
 
             // caminho no windows
-            //String caminhoArquivoTxt1 = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste1.txt";
+            String caminhoArquivoTxt1 = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste1.txt";
             //String caminhoArquivoTxt2 ="C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste2.txt";
             String caminhoArquivoPdf = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste3.pdf";
             //String caminhoArquivoImg = "C:\\Users\\NatalyJessica\\Documents\\Projeto_Huffman-\\teste4.jpg";
@@ -34,10 +34,12 @@ public class Main {
 
            //TESTEES
 
-           byte [] dados = Huffman.lerArquivo(caminhoArquivoPdf);
-           System.out.println("dados: " + Arrays.toString(dados));
+           byte [] dados = Huffman.lerArquivo(caminhoArquivoTxt1);
+           //System.out.println("dados: " + Arrays.toString(dados));
            HashMap<Byte, Integer> frequencias = Huffman.calcularFrequencia(dados);
-           System.out.println(frequencias);
+           //System.out.println(frequencias);
+           FilaDePrioridade<Huffman.NoHuffman> fila = Huffman.criaFilaDePrioridade(frequencias);
+           //System.out.println(fila);
 
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
