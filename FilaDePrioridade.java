@@ -83,4 +83,9 @@ public class FilaDePrioridade<X extends Comparable<X>> {
             reorganizarParaBaixo(maior);
         }
     }
+
+    public int getTamanho() {
+        return this.tamanhoAtual;
+    }
+    
 }

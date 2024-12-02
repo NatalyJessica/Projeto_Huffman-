@@ -86,113 +86,76 @@ public class Huffman {
         return frequencias;
     }
 
-        // Método que cria a fila de prioridade com base nas frequências
-        public static FilaDePrioridade<NoHuffman> criaFilaDePrioridade(HashMap<Byte, Integer> frequencias) throws Exception {
-            // Criação da lista de nós de Huffman a partir das frequências usando ListaSimplesDesordenada
-            ListaSimplesDesordenada<NoHuffman> nos = new ListaSimplesDesordenada<>();
-            System.out.println("ate aqui");
-            // Preenchendo a lista com os nós de Huffman
-            for (Byte dado : frequencias.keySet()) {
-                System.out.println("entrouNoFor");
-                int frequencia = frequencias.get(dado);
-                // Criação do nó para cada byte e frequência
-                nos.guardeUmItemNoFinal(new NoHuffman(dado, frequencia));
-                System.out.println("Guardou na lista");
-            }
-    
-            // Criando a fila de prioridade com base nos nós de Huffman
-            FilaDePrioridade<NoHuffman> fila = new FilaDePrioridade<NoHuffman>();
-            System.out.println("fila criada");
-
-            
-            // Ordena a lista de nós de Huffman conforme a frequência
-            while (!nos.isVazia()) {
-                NoHuffman no = nos.recupereItemDoInicio(); // Recupera o primeiro nó
-                fila.guardeUmItem(no); // Adiciona o nó à fila de prioridade
-                nos.removaItemIndicado(no); // Remove o nó da lista para evitar o loop infinito
-                System.out.println("GUARDOU NA FILA");
-            }
-            System.out.println(fila);
-            return fila;
+    // Método que cria a fila de prioridade com base nas frequências
+    public static FilaDePrioridade<NoHuffman> criaFilaDePrioridade(HashMap<Byte, Integer> frequencias) throws Exception {
+        // Criação da lista de nós de Huffman a partir das frequências usando ListaSimplesDesordenada
+        ListaSimplesDesordenada<NoHuffman> nos = new ListaSimplesDesordenada<>();
+        //System.out.println("ate aqui");
+        // Preenchendo a lista com os nós de Huffman
+        for (Byte dado : frequencias.keySet()) {
+            //System.out.println("entrouNoFor");
+            int frequencia = frequencias.get(dado);
+            // Criação do nó para cada byte e frequência
+            nos.guardeUmItemNoFinal(new NoHuffman(dado, frequencia));
+            //System.out.println("Guardou na lista");
         }
     
+         // Criando a fila de prioridade com base nos nós de Huffman
+        FilaDePrioridade<NoHuffman> fila = new FilaDePrioridade<NoHuffman>();
+        //System.out.println("fila criada");    
+        // Ordena a lista de nós de Huffman conforme a frequência
+        while (!nos.isVazia()) {
+            NoHuffman no = nos.recupereItemDoInicio(); // Recupera o primeiro nó
+            fila.guardeUmItem(no); // Adiciona o nó à fila de prioridade
+            nos.removaItemIndicado(no); // Remove o nó da lista para evitar o loop infinito
+            //System.out.println("GUARDOU NA FILA");
+        }
+        //System.out.println(fila);
+         return fila;
+    }
 
-    /*
-     * public static FilaDePrioridade<NoHuffman>
-     * criaFilaDePrioridade(HashMap<Character, Integer> frequencias)
-     * throws Exception {
-     * // Cria uma fila de prioridade (min-heap) para armazenar os nós de Huffman
-     * FilaDePrioridade<NoHuffman> filaDePrioridade = new
-     * FilaDePrioridade<NoHuffman>(frequencias.size());
-     * 
-     * // Para cada caractere e sua frequência, cria um nó e insere na fila
-     * for (Character c : frequencias.keySet()) {
-     * NoHuffman novoNo = new NoHuffman(c, frequencias.get(c));
-     * filaDePrioridade.guardeUmItem(novoNo);
-     * }
-     * 
-     * return filaDePrioridade;
-     * }
-     */
+    public static NoHuffman construirArvoreDeHuffman(FilaDePrioridade<NoHuffman> filaDePrioridade) throws Exception {
+        // Enquanto houver mais de um nó na fila de prioridade, combine os dois nós com menor frequência
+        while (filaDePrioridade.getTamanho() > 1) {
+            // Extrai os dois nós com menor frequência
+            NoHuffman no1 = filaDePrioridade.remove();
+            NoHuffman no2 = filaDePrioridade.remove();
+    
+            // Cria um novo nó interno com a soma das frequências
+            NoHuffman noInterno = new NoHuffman(no1, no2);
+    
+            // Insere o novo nó interno de volta na fila de prioridade
+            filaDePrioridade.guardeUmItem(noInterno);
+        }
+    
+        // O último nó restante na fila é a raiz da árvore de Huffman
+        return filaDePrioridade.remove();
+    }
 
-    /*
-     * public static NoHuffman construirArvoreDeHuffman(FilaDePrioridade<NoHuffman>
-     * filaDePrioridade) throws Exception {
-     * // Enquanto houver mais de um nó na fila de prioridade, continue combinando
-     * while (filaDePrioridade.getSize() > 1) {
-     * // Extrai os dois nós com menor frequência
-     * NoHuffman no1 = filaDePrioridade.remove();
-     * NoHuffman no2 = filaDePrioridade.remove();
-     * 
-     * // Cria um novo nó interno com a soma das frequências
-     * NoHuffman noInterno = new NoHuffman(no1, no2);
-     * 
-     * // Insere o novo nó interno de volta na fila de prioridade
-     * filaDePrioridade.guardeUmItem(noInterno);
-     * }
-     * 
-     * // Ao final, resta apenas um nó na fila, que é a raiz da árvore
-     * return filaDePrioridade.remove();
-     * }
-     */
-
-    // Método modificado para retornar o HashMap com os códigos
-    /*
-     * public static HashMap<Character, String> gerarCodigos(NoHuffman no) throws
-     * Exception {
-     * HashMap<Character, String> codigos = new HashMap<Character, String>(); //
-     * Criar o HashMap dentro do método
-     * 
-     * // Função recursiva para gerar os códigos
-     * gerarCodigosRecursivo(no, "", codigos);
-     * 
-     * return codigos; // Retornar o HashMap com os códigos
-     * }
-     * 
-     * private static void gerarCodigosRecursivo(NoHuffman no, String codigoAtual,
-     * HashMap<Character, String> codigos)
-     * throws Exception {
-     * // Se o nó for uma folha, significa que é um caractere, então guardamos o
-     * código
-     * if (no.isFolha()) {
-     * codigos.put(no.getCaractere(), codigoAtual); // Aqui chamamos o método
-     * correto da sua classe
-     * // HashMap
-     * return;
-     * }
-     * 
-     * // Recursão para o filho esquerdo (adiciona '0' ao código)
-     * if (no.getFilhoEsquerdo() != null) {
-     * gerarCodigosRecursivo(no.getFilhoEsquerdo(), codigoAtual + "0", codigos);
-     * }
-     * 
-     * // Recursão para o filho direito (adiciona '1' ao código)
-     * if (no.getFilhoDireito() != null) {
-     * gerarCodigosRecursivo(no.getFilhoDireito(), codigoAtual + "1", codigos);
-     * }
-     * }
-     */
-
+    public static HashMap<Byte, String> gerarCodigos(NoHuffman raiz) throws Exception {
+        HashMap<Byte, String> codigos = new HashMap<>(); // Mapa para armazenar os códigos
+        gerarCodigosRecursivo(raiz, "", codigos);       // Chamada inicial para a recursão
+        return codigos;                                 // Retorna o mapa gerado
+    }
+    
+    private static void gerarCodigosRecursivo(NoHuffman no, String codigoAtual, HashMap<Byte, String> codigos) 
+            throws Exception {
+        // Se o nó é folha, ele contém um byte válido
+        if (no.isFolha()) {
+            codigos.put(no.getDado(), codigoAtual); // Adiciona o byte e seu código ao mapa
+            return;
+        }
+    
+        // Recursão para o filho esquerdo, adicionando '0' ao código atual
+        if (no.getFilhoEsquerdo() != null) {
+            gerarCodigosRecursivo(no.getFilhoEsquerdo(), codigoAtual + "0", codigos);
+        }
+    
+        // Recursão para o filho direito, adicionando '1' ao código atual
+        if (no.getFilhoDireito() != null) {
+            gerarCodigosRecursivo(no.getFilhoDireito(), codigoAtual + "1", codigos);
+        }
+    }
     /*
      * public static void compactarArquivo(String caminhoArquivoOriginal, String
      * caminhoArquivoCompactado)
