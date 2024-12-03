@@ -20,27 +20,22 @@ public class ListaSimplesDesordenada<X> implements Iterable<X> {
             this.prox = null;
         }
 
-        // Método para obter a informação armazenada no nó
+    
         public X getInfo() {
             return this.info;
         }
+        public void setInfo(X i) {
+            this.info = i;
+          }
 
-        // Método para obter a referência para o próximo nó
         public No getProx() {
             return this.prox;
         }
-        // Método para definir a informação armazenada no nó
-        /*
-         * public void setInfo(X i) {
-         * this.info = i;
-         * }
-         */
-
-        // Método para definir a referência para o próximo nó
         public void setProx(No p) {
             this.prox = p;
         }
-    } // fim da classe No
+
+    } 
 
     // Referências para o primeiro e o último nó da lista
     private No primeiro, ultimo;
